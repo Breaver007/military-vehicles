@@ -1,0 +1,15 @@
+/* Поворот на 90 градусов */
+/* Для вертикального текста (снизу вверх) */
+.vertical-text {
+    text-orientation: sideways;
+    white-space: nowrap;
+    writing-mode: sideways-rl;
+    /*height: auto;*/
+}
+
+/* Вертикальный текст (сверху вниз) */
+.vertical-text-lr {
+    text-orientation: sideways;
+    white-space: nowrap;
+    writing-mode: sideways-lr;
+}
