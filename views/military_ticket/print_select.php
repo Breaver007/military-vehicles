@@ -5,13 +5,33 @@
                 <h3><i class="bi bi-printer"></i> Печать эксплуатационной карточки</h3>
             </div>
             <div class="card-body">
-                <div class="badge rounded-pill text-bg-primary fs-6 mb-2">
-                    <i class="bi bi-truck"></i>
-                    <strong>Техника:</strong> <?= htmlspecialchars($machineName) ?>
-                </div>
-
+                <?php
+                if (isset($_SESSION['errors'])): ?>
+                    <div class="alert alert-danger">
+                        <ul class="mb-0">
+                            <?php foreach ($_SESSION['errors'] as $error): ?>
+                                <li><?= $error ?></li>
+                            <?php endforeach; ?>
+                        </ul>
+                    </div>
+                    <?php unset($_SESSION['errors']); ?>
+                <?php endif; ?>
                 <form action="/military-ticket/print" method="POST" id="printForm" target="_blank">
-                    <input type="hidden" name="idModelMachine" value="<?= $idModelMachine ?>">
+                    <div class="form-floating">
+                        <select class="form-select"
+                                name="idModelMachine"
+                                id="idModelMachine"
+                                aria-label="Floating label select example">
+                            <?php
+                            foreach ($MilitaryModelMachine as $i => $model) {
+                                ?>
+                                <option value="<?= $model['id'] ?>"><?= $model['name'] . " " . $model['registr_plate'] ?></option>
+                                <?php
+                            }
+                            ?>
+                        </select>
+                        <label for="idModelMachine">Выбор техники</label>
+                    </div>
 
                     <div class="mb-2">
                         <label for="start_date" class="form-label">
@@ -55,10 +75,6 @@
                     </div>
 
                     <div class="d-flex gap-3">
-                        <a href="/military-ticket/<?= $idModelMachine ?>/<?= date('n') ?>/<?= date('Y') ?>"
-                           class="btn btn-secondary flex-grow-1">
-                            <i class="bi bi-arrow-left"></i> Назад
-                        </a>
                         <button type="submit" class="btn btn-primary flex-grow-1">
                             <i class="bi bi-printer"></i> Печать
                         </button>

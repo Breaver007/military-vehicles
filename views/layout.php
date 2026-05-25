@@ -22,6 +22,8 @@
                 <div class="col-sm-10 col-md-10 col-lg-10 col-xl-10 col-xxl-10 d-flex align-items-center justify-content-between">
                     <div>
                         <a href="/military-ticket"
+                           class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Потевые листы</a>
+                        <a href="/military-ticket/print-select/"
                            class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Эксплуатационная
                             карточка</a>
                         <a href="/military-report/print-select"
@@ -53,10 +55,22 @@
                               <a href="/military-fuel-other-places"
                                  class="dropdown-item">Заправки других в/ч</a>
                           </li>
-                          <li>
-                              <a href="/military-ticket-from-local-other"
-                                 class="dropdown-item">Прочие заправки</a>
-                          </li>
+                           <li>
+                               <a href="/military-butter"
+                                  class="dropdown-item">Виды масел</a>
+                           </li>
+                           <li>
+                               <a href="/military-antifreeze"
+                                  class="dropdown-item">Антифризы</a>
+                           </li>
+                           <li>
+                               <a href="/military-antifreeze/records"
+                                  class="dropdown-item">Записи антифриза</a>
+                           </li>
+                           <li>
+                               <a href="/military-ticket-from-local-other"
+                                  class="dropdown-item">Прочие заправки</a>
+                           </li>
                           <li>
                               <a href="/military-machine"
                                  class="dropdown-item">Техника

@@ -150,7 +150,6 @@
         $machinesData[$machineId]['kilometres'] += floatval($ticket['kilometres_speedometer'] ?? 0);
         $machinesData[$machineId]['fuel'] += floatval($ticket['spent_fuel'] ?? 0);
     }
-
     // Рассчитываем остальные показатели
     foreach ($fuels as $fuelId => &$fuel) {
         $fuel['taken_total'] = $fuel['taken_local'] + $fuel['taken_other'] + $fuel['taken_prochee'];
@@ -316,7 +315,6 @@
             }
         }
     }
-
     ?>
     <!-- Таблица 2: Сводка по документам -->
     <table class="table-bordered w-100 mt-2">
@@ -325,7 +323,7 @@
             <th rowspan="2" class="vertical-mode" style="width: 120px;"><span class="rotated">Наименование графы</span></th>
             <th rowspan="2" style="width: 100px;">Откуда прибыло, куда убыло</th>
             <th rowspan="2" style="width: 100px;">Наименование документа</th>
-            <th rowspan="2" style="width: 100px;">№, дата документа</th>
+            <th rowspan="2" style="width: 155px;">№, дата документа</th>
             <th colspan="<?= count($fuels) ?>">Наименование и количество ГСМ, ТС</th>
         </tr>
         <tr>
@@ -448,13 +446,19 @@
             }
             ?>
         </tr>
-       
         <tr>
             <td class="text-center">10</td>
             <td>Фактический расход</td>
-            <td>Фактический расход</td>
             <td>Путевой лист</td>
-            <td>__.__.20__</td>
+            <td class="small">
+                <?php
+                foreach ($machinesData as $idMachines => $dataMachines) {
+                    ?>
+                    <p><span class="fw-bold"><?=$dataMachines['name']?></span><?= ": " . $dataMachines['registr_plate']?></p>
+                    <?php
+                    }
+                ?>
+            </td>
             <td>
                 <?php foreach ($fuels as $f) echo $f['name'] . ': ' . number_format($f['spent_fuel'], 1, '.', ' ') . '; '; ?>
             </td>

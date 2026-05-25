@@ -90,7 +90,7 @@ $months = [
                     <div class="container-fluid ">
                         <div id="calendar"
                              class="d-flex align-items-center w-100">
-                            <div class="d-flex w-75">
+                            <div class="d-flex justify-content-center w-100">
                                 <button class="btn btn-light btn-sm"
                                         id="prevMonth"
                                         title="Предыдущий месяц">
@@ -105,18 +105,18 @@ $months = [
                                     <i class="bi bi-chevron-right"></i>
                                 </button>
                             </div>
-                            <div class="d-flex justify-content-end w-25">
-                                <a href="/military-ticket/export/<?= $data['id'] ?>/<?= $data['month'] ?>/<?= $data['year'] ?>"
-                                   class="btn btn-success me-2">
-                                    <i class="bi bi-file-excel"></i>
-                                    Экспорт в Excel
-                                </a>
-                                <a href="/military-ticket/print-select/<?= $data['id'] ?>"
-                                   class="btn btn-info">
-                                    <i class="bi bi-printer"></i>
-                                    Печать
-                                </a>
-                            </div>
+<!--                            <div class="d-flex justify-content-end w-25">-->
+<!--                                <a href="/military-ticket/export/--><?php //= $data['id'] ?><!--/--><?php //= $data['month'] ?><!--/--><?php //= $data['year'] ?><!--"-->
+<!--                                   class="btn btn-success me-2">-->
+<!--                                    <i class="bi bi-file-excel"></i>-->
+<!--                                    Экспорт в Excel-->
+<!--                                </a>-->
+<!--                                <a href="/military-ticket/print-select/--><?php //= $data['id'] ?><!--"-->
+<!--                                   class="btn btn-info">-->
+<!--                                    <i class="bi bi-printer"></i>-->
+<!--                                    Печать-->
+<!--                                </a>-->
+<!--                            </div>-->
                         </div>
                     </div>
                 </div>
@@ -136,7 +136,7 @@ $months = [
                     </div>
                 <?php endif; ?>
                 <div class="text-center py-1">
-                    Эксплуатационная карточка № <?= isset($data['id']) ? $data['id'] : "_____" ?>
+                    Путевой лист № <?= isset($data['id']) ? $data['id'] : "_____" ?>
                 </div>
                 <div class="text-center py-1">
                     <?= isset($data['month']) ? $months[$data['month']] : $months[date('n')]; ?>

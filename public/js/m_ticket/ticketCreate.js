@@ -342,22 +342,6 @@ async function updateTakenFuel(){
     const total = manualTotal + fuelTotal + fuelOtherTotal + fuelPlacesTotal;
     if (takenFuelInput) takenFuelInput.value = total;
 }
-function updateTakenButter(){
-    const takenButterInput = document.getElementById('taken_butter');
-    const takenLoadInput = document.getElementById('taken_load_b');
-    const takenLoadOtherInput = document.getElementById('taken_load_other_b');
-    const takenTransferredInput = document.getElementById('taken_transferred_b');
-    const takenOtherInput = document.getElementById('taken_other_b');
-
-    const takenLoad = parseFloat(takenLoadInput?.value) || 0;
-    const takenLoadOther = parseFloat(takenLoadOtherInput?.value) || 0;
-    const takenTransferred = parseFloat(takenTransferredInput?.value) || 0;
-    const takenOther = parseFloat(takenOtherInput?.value) || 0;
-
-    const total = takenLoad + takenLoadOther + takenTransferred + takenOther;
-    if (takenButterInput) takenButterInput.value = total;
-}
-
 ///////////////////////////////////////////////////////////////////////
 
 function openUrl(idModelMachine, monthParam, yearParam) {
@@ -886,4 +870,172 @@ function getFuelPlacesTypeName(id) {
     if (!select) return 'Неизвестное место';
     const option = select.querySelector(`option[value="${id}"]`);
     return option ? option.textContent : 'Неизвестное место';
+}
+
+///////////////////////////////////////////////////////////////////////
+// Функции для масла
+
+async function updateTakenButter(){
+    const takenButterInput = document.getElementById('taken_butter');
+    const takenLoadInput = document.getElementById('taken_load_b');
+    const takenLoadOtherInput = document.getElementById('taken_load_other_b');
+    const takenTransferredInput = document.getElementById('taken_transferred_b');
+    const takenOtherInput = document.getElementById('taken_other_b');
+
+    const takenLoad = parseFloat(takenLoadInput?.value) || 0;
+    const takenLoadOther = parseFloat(takenLoadOtherInput?.value) || 0;
+    const takenTransferred = parseFloat(takenTransferredInput?.value) || 0;
+    const takenOther = parseFloat(takenOtherInput?.value) || 0;
+
+    const manualTotal = takenLoad + takenLoadOther + takenTransferred + takenOther;
+
+    const tempId = document.getElementById('temp_id')?.value;
+    let butterTotal = 0;
+
+    if (tempId) {
+        try {
+            const res = await fetch(`/military-ticket/temp-get-butter/${tempId}`);
+            const data = await res.json();
+            butterTotal = data.total || 0;
+        } catch (e) {
+            console.error('Error loading butter totals:', e);
+        }
+    }
+
+    const total = manualTotal + butterTotal;
+    if (takenButterInput) takenButterInput.value = total;
+}
+
+async function addButterRecord() {
+    const tempId = document.getElementById('temp_id').value;
+    const date = document.getElementById('butter_date').value;
+    const mt_butter_id = document.getElementById('butter_type').value;
+    const value = document.getElementById('butter_value').value;
+
+    if (!date) {
+        showAlert('danger', 'Укажите дату');
+        return;
+    }
+    if (!mt_butter_id) {
+        showAlert('danger', 'Выберите вид масла');
+        return;
+    }
+    if (!value || value <= 0) {
+        showAlert('danger', 'Укажите корректное количество');
+        return;
+    }
+
+    try {
+        const response = await fetch('/military-ticket/temp-add-butter', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                temp_id: tempId,
+                date: date,
+                mt_butter_id: mt_butter_id,
+                value: parseFloat(value)
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            document.getElementById('butter_date').value = '';
+            document.getElementById('butter_type').value = '';
+            document.getElementById('butter_value').value = '';
+
+            await loadButterRecords();
+
+            const modal = bootstrap.Modal.getInstance(document.getElementById('butterModal'));
+            modal.hide();
+            showAlert('success', 'Запись успешно добавлена');
+        } else {
+            showAlert('danger', result.error || 'Ошибка при добавлении');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('danger', 'Ошибка при добавлении');
+    }
+}
+
+async function loadButterRecords() {
+    const tempId = document.getElementById('temp_id').value;
+    if (!tempId) return;
+
+    try {
+        const response = await fetch(`/military-ticket/temp-get-butter/${tempId}`);
+        const data = await response.json();
+
+        const butterList = document.getElementById('butterList');
+        if (!butterList) return;
+
+        if (data.records.length === 0) {
+            butterList.innerHTML = '<li class="list-group-item text-muted text-center py-3">Нет добавленных записей</li>';
+        } else {
+            butterList.innerHTML = '';
+            data.records.forEach(record => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item d-flex justify-content-between align-items-center';
+                li.innerHTML = `
+                    <div>
+                        <strong>${record.date}</strong><br>
+                        <small class="text-muted">${getButterTypeName(record.mt_butter_id)}</small>
+                    </div>
+                    <div class="text-end">
+                        <span class="badge bg-primary rounded-pill me-2">${record.value} л</span>
+                        <button class="btn btn-sm btn-outline-danger"
+                                data-bs-toggle="modal"
+                                data-bs-target="#deleteConfirmModalButter"
+                                data-butter-id="${record.id}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                `;
+                butterList.appendChild(li);
+            });
+        }
+
+        await updateTakenButter();
+
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+async function removeButterRecord(butterId) {
+    const tempId = document.getElementById('temp_id').value;
+
+    try {
+        const response = await fetch('/military-ticket/temp-remove-butter', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                temp_id: tempId,
+                butter_id: butterId
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            await loadButterRecords();
+            showAlert('success', 'Запись удалена');
+        } else {
+            showAlert('danger', result.error || 'Ошибка при удалении');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showAlert('danger', 'Ошибка при удалении');
+    }
+}
+
+function getButterTypeName(id) {
+    const select = document.getElementById('butter_type');
+    if (!select) return 'Неизвестный вид масла';
+    const option = select.querySelector(`option[value="${id}"]`);
+    return option ? option.textContent : 'Неизвестный вид масла';
 }

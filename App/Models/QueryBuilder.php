@@ -145,4 +145,27 @@ class QueryBuilder
         $results = $this->get();
         return $results[0] ?? null;
     }
+
+    /**
+     * Удалить записи по текущим условиям WHERE
+     */
+    public function delete(): bool
+    {
+        $sql = "DELETE FROM {$this->table}";
+
+        if (!empty($this->wheres)) {
+            $whereParts = [];
+            foreach ($this->wheres as $index => $where) {
+                if ($index === 0) {
+                    $whereParts[] = $where['sql'];
+                } else {
+                    $whereParts[] = $where['type'] . ' ' . $where['sql'];
+                }
+            }
+            $sql .= " WHERE " . implode(' ', $whereParts);
+        }
+
+        $stmt = $this->db->prepare($sql);
+        return $stmt->execute($this->params);
+    }
 }

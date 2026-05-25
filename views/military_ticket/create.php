@@ -6,7 +6,7 @@
 //        ?>
     <div class="card">
         <div class="card-header">
-            <h3>Создать новую запись в эксплуатационную карточку</h3>
+            <h3>Создать новую запись в путевой лист</h3>
         </div>
         <div class="card-body">
             <?php if (isset($_SESSION['errors'])): ?>
@@ -788,12 +788,23 @@
                                                 <i class="bi bi-geo-alt"></i> Прочие заправки
                                             </button>
                                         </li>
+                                        <li class="nav-item" role="presentation">
+                                            <button class="nav-link"
+                                                    id="butter-tab"
+                                                    data-bs-toggle="tab"
+                                                    data-bs-target="#butter-panel"
+                                                    type="button"
+                                                    role="tab"
+                                                    aria-selected="false">
+                                                <i class="bi bi-droplet"></i> Масла
+                                            </button>
+                                        </li>
                                     </ul>
                                     <div class="tab-content" id="fuelTabsContent">
                                         <div class="tab-pane fade show active"
-                                             id="local-panel"
-                                             role="tabpanel"
-                                             aria-labelledby="local-tab">
+                                              id="local-panel"
+                                              role="tabpanel"
+                                              aria-labelledby="local-tab">
                                             <div class="card mt-3">
                                                 <div class="card-header d-flex justify-content-between align-items-center">
                                                     <span><i class="bi bi-list-check"></i> Заправки (склад в/ч)</span>
@@ -837,9 +848,9 @@
                                             </div>
                                         </div>
                                         <div class="tab-pane fade"
-                                             id="places-panel"
-                                             role="tabpanel"
-                                             aria-labelledby="places-tab">
+                                              id="places-panel"
+                                              role="tabpanel"
+                                              aria-labelledby="places-tab">
                                             <div class="card mt-3">
                                                 <div class="card-header d-flex justify-content-between align-items-center">
                                                     <span><i class="bi bi-list-check"></i> Заправки (Прочие заправки)</span>
@@ -854,6 +865,29 @@
                                                     <ul class="list-group list-group-flush" id="fuelPlacesList">
                                                         <li class="list-group-item text-muted text-center py-3">
                                                             Нет добавленных заправок
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="tab-pane fade"
+                                              id="butter-panel"
+                                              role="tabpanel"
+                                              aria-labelledby="butter-tab">
+                                            <div class="card mt-3">
+                                                <div class="card-header d-flex justify-content-between align-items-center">
+                                                    <span><i class="bi bi-list-check"></i> Масла</span>
+                                                    <button type="button"
+                                                            class="btn btn-sm btn-outline-primary"
+                                                            data-bs-toggle="modal"
+                                                            data-bs-target="#butterModal">
+                                                        <i class="bi bi-plus-lg"></i> Добавить
+                                                    </button>
+                                                </div>
+                                                <div class="card-body p-0">
+                                                    <ul class="list-group list-group-flush" id="butterList">
+                                                        <li class="list-group-item text-muted text-center py-3">
+                                                            Нет добавленных записей
                                                         </li>
                                                     </ul>
                                                 </div>
@@ -1014,12 +1048,14 @@
     require_once __DIR__ . "/modals/MilitaryLocalStock.php";
     require_once __DIR__ . "/modals/MilitaryOtherStock.php";
     require_once __DIR__ . "/modals/MilitaryPlacesStock.php";
+    require_once __DIR__ . "/modals/MilitaryButterStock.php";
 ?>
 <script>
     // Переменные для модального окна удаления
     let deleteFuelId = null;
     let deleteFuelOtherId = null;
     let deleteFuelPlacesId = null;
+    let deleteButterId = null;
 
     document.addEventListener('DOMContentLoaded', function () {
         loadNorms(<?= json_encode($data['MilitaryNorm']) ?>);
@@ -1029,6 +1065,7 @@
         loadFuelRecords();
         loadFuelOtherRecords();
         loadFuelPlacesRecords();
+        loadButterRecords();
 
         // Настройка модального окна удаления (local)
         const deleteModal = document.getElementById('deleteConfirmModal');
@@ -1076,6 +1113,23 @@
                 if (deleteFuelPlacesId) {
                     removeFuelPlacesRecord(deleteFuelPlacesId);
                     const modal = bootstrap.Modal.getInstance(deletePlacesModal);
+                    modal.hide();
+                }
+            });
+        }
+
+        // Настройка модального окна удаления (butter)
+        const deleteButterModal = document.getElementById('deleteConfirmModalButter');
+        if (deleteButterModal) {
+            deleteButterModal.addEventListener('show.bs.modal', function(event) {
+                const button = event.relatedTarget;
+                deleteButterId = button.getAttribute('data-butter-id');
+            });
+
+            document.getElementById('confirmDeleteButterBtn').addEventListener('click', function() {
+                if (deleteButterId) {
+                    removeButterRecord(deleteButterId);
+                    const modal = bootstrap.Modal.getInstance(deleteButterModal);
                     modal.hide();
                 }
             });

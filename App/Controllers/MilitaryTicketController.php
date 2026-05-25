@@ -3,11 +3,13 @@
 namespace App\Controllers;
 
 use App\Controllers\Controller;
+use App\Models\OperationalCard\MilitaryButter;
 use App\Models\OperationalCard\MilitaryFuel;
 use App\Models\OperationalCard\MilitaryFuelOtherPlaces;
 use App\Models\OperationalCard\MilitaryModelMachine;
 use App\Models\OperationalCard\MilitaryNorm;
 use App\Models\OperationalCard\MilitaryTicket;
+use App\Models\OperationalCard\MilitaryTicketButter;
 use App\Models\OperationalCard\MilitaryTicketFromLocalOther;
 use App\Models\OperationalCard\MilitaryTicketFromLocalStock;
 use App\Models\OperationalCard\MilitaryTicketLocal;
@@ -25,6 +27,7 @@ class MilitaryTicketController extends Controller
     private MilitaryTicket $ticketModel;
     private MilitaryModelMachine $machineModel;
     private MilitaryFuel $fuelModel;
+    private MilitaryButter $butterModel;
     private MilitaryUnit $unitModel;
     private MilitaryNorm $normModel;
     private MilitaryTicketFromLocalStock $localStockModel;
@@ -33,6 +36,7 @@ class MilitaryTicketController extends Controller
     private MilitaryTicketLocal $ticketLocalModel;
     private MilitaryTicketOther $ticketOtherModel;
     private MilitaryTicketPlaces $ticketPlacesModel;
+    private MilitaryTicketButter $ticketButterModel;
 
     public function __construct()
     {
@@ -40,6 +44,7 @@ class MilitaryTicketController extends Controller
         $this->ticketModel = new MilitaryTicket();
         $this->machineModel = new MilitaryModelMachine();
         $this->fuelModel = new MilitaryFuel();
+        $this->butterModel = new MilitaryButter();
         $this->unitModel = new MilitaryUnit();
         $this->normModel = new MilitaryNorm();
         $this->localStockModel = new MilitaryTicketFromLocalStock();
@@ -48,6 +53,7 @@ class MilitaryTicketController extends Controller
         $this->ticketLocalModel = new MilitaryTicketLocal();
         $this->ticketOtherModel = new MilitaryTicketOther();
         $this->ticketPlacesModel = new MilitaryTicketPlaces();
+        $this->ticketButterModel = new MilitaryTicketButter();
     }
 
     /**
@@ -79,6 +85,7 @@ class MilitaryTicketController extends Controller
         $_SESSION['temp_fuels'][$tempId] = [];
         $_SESSION['temp_fuels_other'][$tempId] = [];
         $_SESSION['temp_fuels_places'][$tempId] = [];
+        $_SESSION['temp_butters'][$tempId] = [];
         $_SESSION['temp_ticket_data'] = [
             'machine_id' => $id,
             'month' => $month,
@@ -94,6 +101,7 @@ class MilitaryTicketController extends Controller
             'maxKilometres' => $MaxKilometres,
             'maxOpeningBalanceFuel' => $OpeningBalanceFuel,
             'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
+            'MilitaryButter' => $this->butterModel->where('is_active', '=', 1),
             'MilitaryLocalStock' => $this->localStockModel->where('is_active', '=', 1),
             'MilitaryFuelOtherPlaces' => $this->fuelOtherPlacesModel->where('is_active', '=', 1),
             'MilitaryOtherStock' => $this->OtherStockModel->where('is_active', '=', 1),
@@ -196,6 +204,10 @@ class MilitaryTicketController extends Controller
         $totalPlaces = $tempId && isset($_SESSION['temp_fuels_places'][$tempId]) ? $this->getTempFuelPlacesTotal($tempId) : 0;
         $data['taken_fuel'] = $totalLocal + $totalOther + $totalPlaces;
 
+        // Получаем сумму из временных записей масла
+        $totalButter = $tempId && isset($_SESSION['temp_butters'][$tempId]) ? $this->getTempButterTotal($tempId) : 0;
+        $data['taken_butter'] = (float)($_POST['taken_butter'] ?? 0) + $totalButter;
+
         $ticket = $this->ticketModel->create($data);
 
         if ($ticket) {
@@ -240,6 +252,21 @@ class MilitaryTicketController extends Controller
                 // Очищаем временные данные
                 unset($_SESSION['temp_fuels_places'][$tempId]);
             }
+
+            // Сохраняем временные записи масла в реальную таблицу
+            if ($tempId && isset($_SESSION['temp_butters'][$tempId]) && !empty($_SESSION['temp_butters'][$tempId])) {
+                foreach ($_SESSION['temp_butters'][$tempId] as $butter) {
+                    $this->ticketButterModel->create([
+                        'date' => $butter['date'],
+                        'mt_butter_id' => $butter['mt_butter_id'],
+                        'value' => $butter['value'],
+                        'ticket_id' => $ticket['id']
+                    ]);
+                }
+                // Очищаем временные данные
+                unset($_SESSION['temp_butters'][$tempId]);
+            }
+
             unset($_SESSION['temp_ticket_id']);
             unset($_SESSION['temp_ticket_data']);
 
@@ -281,31 +308,25 @@ class MilitaryTicketController extends Controller
         // Валидация дат
         if (empty($startDate) || empty($endDate)) {
             $_SESSION['error'] = 'Укажите период печати';
-            $this->redirect("/military-ticket/print-select/{$idModelMachine}");
+            $this->redirect("/military-ticket/print-select/");
             return;
         }
 
         // Получаем данные за период
         $data = $this->getTicketDataByPeriod($idModelMachine, $startDate, $endDate);
 
-        if (empty($data['getModelMachineTicket'])) {
-            $_SESSION['error'] = 'За указанный период нет данных для печати';
-            $this->redirect("/military-ticket/print-select/{$idModelMachine}");
-            return;
-        }
         // Подключаем шаблон для печати
         include 'views/military_ticket/print.php';
     }
     /**
      * Страница выбора периода для печати
      */
-    public function printSelect(int $idModelMachine): void
+    public function printSelect(): void
     {
         $this->view('military_ticket/print_select', [
             'title' => 'Выбор периода для печати',
-            'idModelMachine' => $idModelMachine,
-            'machineName' => $this->machineModel->find($idModelMachine)['name'] ?? 'Техника',
-            'currentDate' => date('Y-m-d')
+            'currentDate' => date('Y-m-d'),
+            'MilitaryModelMachine' => $this->machineModel->where('is_active', '=', 1)
         ]);
     }
     /**
@@ -378,6 +399,9 @@ class MilitaryTicketController extends Controller
         $ticketPlacesFuels = $this->ticketPlacesModel->query()
             ->where('ticket_id', '=', $id)
             ->get();
+        $ticketButterFuels = $this->ticketButterModel->query()
+            ->where('ticket_id', '=', $id)
+            ->get();
 
         // Генерируем временный ID для сессии (для возможности добавления новых заправок при редактировании)
         $tempId = 'edit_' . $id . '_' . uniqid();
@@ -400,6 +424,12 @@ class MilitaryTicketController extends Controller
             'mt_places_id' => $f['mt_places_id'],
             'value' => $f['value']
         ], $ticketPlacesFuels);
+        $_SESSION['temp_butters'][$tempId] = array_map(fn($f) => [
+            'id' => 'existing_' . $f['id'],
+            'date' => $f['date'],
+            'mt_butter_id' => $f['mt_butter_id'],
+            'value' => $f['value']
+        ], $ticketButterFuels);
 
         $this->view('military_ticket/edit', [
             'title' => "Редактировать карточку №{$ticket['id']}",
@@ -407,12 +437,14 @@ class MilitaryTicketController extends Controller
             'ticket' => $ticket,
             'temp_id' => $tempId,
             'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
+            'MilitaryButter' => $this->butterModel->where('is_active', '=', 1),
             'MilitaryLocalStock' => $this->localStockModel->where('is_active', '=', 1),
             'MilitaryFuelOtherPlaces' => $this->fuelOtherPlacesModel->where('is_active', '=', 1),
             'MilitaryOtherStock' => $this->OtherStockModel->where('is_active', '=', 1),
             'ticketLocalFuels' => $ticketLocalFuels,
             'ticketOtherFuels' => $ticketOtherFuels,
             'ticketPlacesFuels' => $ticketPlacesFuels,
+            'ticketButterFuels' => $ticketButterFuels,
         ]);
     }
 
@@ -473,7 +505,7 @@ class MilitaryTicketController extends Controller
             'opening_balance_fuel' => (float)($_POST['opening_balance_fuel'] ?? $ticket['opening_balance_fuel'] ?? 0),
             'opening_balance_butter' => (float)($_POST['opening_balance_butter'] ?? $ticket['opening_balance_butter'] ?? 0),
             'taken_fuel' => 0, // будет обновлено после обработки заправок
-            'taken_butter' => (float)($_POST['taken_butter'] ?? $ticket['taken_butter'] ?? 0),
+            'taken_butter' => 0, // будет обновлено после обработки записей масла
             'spent_fuel' => (float)($_POST['spent_fuel'] ?? $ticket['spent_fuel'] ?? 0),
             'spent_butter' => (float)($_POST['spent_butter'] ?? $ticket['spent_butter'] ?? 0),
             'normal_fuel' => (float)($_POST['normal_fuel'] ?? $ticket['normal_fuel'] ?? 0),
@@ -503,7 +535,7 @@ class MilitaryTicketController extends Controller
             $tempId = $_POST['temp_id'] ?? null;
 
             if ($tempId) {
-                // Обновляем taken_fuel = сумма всех заправок +手动ные поля
+                // Обновляем taken_fuel = сумма всех заправок + ручнные поля
                 $totalLocal = $this->getTempFuelTotal($tempId);
                 $totalOther = $this->getTempFuelOtherTotal($tempId);
                 $totalPlaces = $this->getTempFuelPlacesTotal($tempId);
@@ -514,10 +546,14 @@ class MilitaryTicketController extends Controller
                 $totalFuel = $totalLocal + $totalOther + $totalPlaces + $takenLoadF + $takenLoadOtherF + $takenTransferredF + $takenOtherF;
                 $this->ticketModel->update($id, ['taken_fuel' => $totalFuel]);
 
-                // Удаляем старые заправки
-                $this->ticketLocalModel->query()->where('ticket_id', '=', $id)->delete();
-                $this->ticketOtherModel->query()->where('ticket_id', '=', $id)->delete();
-                $this->ticketPlacesModel->query()->where('ticket_id', '=', $id)->delete();
+                // Обновляем taken_butter = сумма временных записей масла + ручные поля
+                $totalButterTemp = $this->getTempButterTotal($tempId);
+                $takenLoadB = (float)($_POST['taken_load_b'] ?? 0);
+                $takenLoadOtherB = (float)($_POST['taken_load_other_b'] ?? 0);
+                $takenTransferredB = (float)($_POST['taken_transferred_b'] ?? 0);
+                $takenOtherB = (float)($_POST['taken_other_b'] ?? 0);
+                $totalButter = $totalButterTemp + $takenLoadB + $takenLoadOtherB + $takenTransferredB + $takenOtherB;
+                $this->ticketModel->update($id, ['taken_butter' => $totalButter]);
 
                 // Добавляем новые заправки из сессии
                 if (!empty($_SESSION['temp_fuels'][$tempId])) {
@@ -556,9 +592,22 @@ class MilitaryTicketController extends Controller
                     }
                 }
 
+                if (!empty($_SESSION['temp_butters'][$tempId])) {
+                    foreach ($_SESSION['temp_butters'][$tempId] as $butter) {
+                        if (strpos($butter['id'], 'existing_') === 0) continue;
+                        $this->ticketButterModel->create([
+                            'date' => $butter['date'],
+                            'mt_butter_id' => $butter['mt_butter_id'],
+                            'value' => $butter['value'],
+                            'ticket_id' => $id
+                        ]);
+                    }
+                }
+
                 unset($_SESSION['temp_fuels'][$tempId]);
                 unset($_SESSION['temp_fuels_other'][$tempId]);
                 unset($_SESSION['temp_fuels_places'][$tempId]);
+                unset($_SESSION['temp_butters'][$tempId]);
             }
 
             $_SESSION['success'] = 'Эксплуатационная карточка успешно обновлена';
@@ -900,6 +949,99 @@ class MilitaryTicketController extends Controller
         ]);
     }
 
+    // ===== Временные записи для масла =====
+
+    private function getTempButterTotal(string $tempId): float
+    {
+        $butters = $_SESSION['temp_butters'][$tempId] ?? [];
+        return array_sum(array_column($butters, 'value'));
+    }
+
+    public function tempAddButter(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+            $this->json(['error' => 'Method not allowed'], 405);
+            return;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+
+        if (!$data) {
+            $this->json(['error' => 'Invalid data'], 400);
+            return;
+        }
+
+        $tempId = $data['temp_id'] ?? null;
+        if (!$tempId || !isset($_SESSION['temp_butters'][$tempId])) {
+            $this->json(['error' => 'Invalid temporary ID'], 400);
+            return;
+        }
+
+        if (empty($data['date']) || empty($data['mt_butter_id']) || !isset($data['value'])) {
+            $this->json(['error' => 'Missing required fields'], 400);
+            return;
+        }
+
+        $butterRecord = [
+            'id' => uniqid('butter_', true),
+            'date' => $data['date'],
+            'mt_butter_id' => (int)$data['mt_butter_id'],
+            'value' => (float)$data['value']
+        ];
+
+        $_SESSION['temp_butters'][$tempId][] = $butterRecord;
+
+        $this->json([
+            'success' => true,
+            'record' => $butterRecord,
+            'total' => $this->getTempButterTotal($tempId)
+        ]);
+    }
+
+    public function tempGetButter(string $tempId): void
+    {
+        if (!isset($_SESSION['temp_butters'][$tempId])) {
+            $this->json(['total' => 0, 'records' => []]);
+            return;
+        }
+
+        $butters = $_SESSION['temp_butters'][$tempId];
+        $total = $this->getTempButterTotal($tempId);
+
+        $this->json(['total' => $total, 'records' => $butters]);
+    }
+
+    public function tempRemoveButter(): void
+    {
+        if ($_SERVER['REQUEST_METHOD'] !== 'DELETE') {
+            $this->json(['error' => 'Method not allowed'], 405);
+            return;
+        }
+
+        $data = json_decode(file_get_contents('php://input'), true);
+        $tempId = $data['temp_id'] ?? null;
+        $butterId = $data['butter_id'] ?? null;
+
+        if (!$tempId || !$butterId || !isset($_SESSION['temp_butters'][$tempId])) {
+            $this->json(['error' => 'Invalid data'], 400);
+            return;
+        }
+
+        foreach ($_SESSION['temp_butters'][$tempId] as $key => $butter) {
+            if ($butter['id'] === $butterId) {
+                unset($_SESSION['temp_butters'][$tempId][$key]);
+                break;
+            }
+        }
+
+        $_SESSION['temp_butters'][$tempId] = array_values($_SESSION['temp_butters'][$tempId]);
+
+        $this->json([
+            'success' => true,
+            'total' => $this->getTempButterTotal($tempId),
+            'records' => $_SESSION['temp_butters'][$tempId]
+        ]);
+    }
 
     public function exportToExcel(int $idModelMachine, int $month, int $year)
     {

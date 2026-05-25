@@ -9,6 +9,8 @@ use App\Controllers\MilitaryModelMachineController;
 use App\Controllers\MilitaryReportController;
 use App\Controllers\MilitaryTicketController;
 use App\Controllers\MilitaryTicketFromLocalOtherController;
+use App\Controllers\MilitaryButterController;
+use App\Controllers\MilitaryAntifreezeController;
 use App\Controllers\MilitaryTicketFromLocalStockController;
 
 /** @var App\Routeer\Router $router */
@@ -31,9 +33,8 @@ $router->get('/military-ticket/edit/{idModelMachine}/{month}/{year}/{id}', [Mili
 $router->post('/military-ticket/update/{idModelMachine}/{month}/{year}/{id}', [MilitaryTicketController::class, 'update'])->name('military-ticket.update');
 $router->get('/military-ticket/delete/{idModelMachine}/{month}/{year}/{id}', [MilitaryTicketController::class, 'delete'])->name('military-ticket.delete');
 $router->get('/military-ticket/export/{idModelMachine}/{month}/{year}', [MilitaryTicketController::class, 'exportToExcel'])->name('military-ticket.exportToExcel');
-$router->get('/military-ticket/print-select/{idModelMachine}', [MilitaryTicketController::class, 'printSelect'])->name('military-ticket.print-select');
+$router->get('/military-ticket/print-select/', [MilitaryTicketController::class, 'printSelect'])->name('military-ticket.print-select');
 $router->post('/military-ticket/print', [MilitaryTicketController::class, 'printForm'])->name('military-ticket.print');
-//$router->get('/military-ticket/print/{idModelMachine}/{month}/{year}', [MilitaryTicketController::class, 'printForm'])->name('military-ticket.print');
 
 // CRUD для видов топлива
 $router->get('/military-fuel', [MilitaryFuelController::class, 'index'])->name('military-fuel.index');
@@ -82,6 +83,38 @@ $router->delete('/military-ticket/temp-remove-fuel-other', [MilitaryTicketContro
 $router->post('/military-ticket/temp-add-fuel-places', [MilitaryTicketController::class, 'tempAddFuelPlaces']);
 $router->get('/military-ticket/temp-get-fuel-places/{tempId}', [MilitaryTicketController::class, 'tempGetFuelPlaces']);
 $router->delete('/military-ticket/temp-remove-fuel-places', [MilitaryTicketController::class, 'tempRemoveFuelPlaces']);
+
+// CRUD для масел
+$router->get('/military-butter', [MilitaryButterController::class, 'index'])->name('military-butter.index');
+$router->get('/military-butter/create', [MilitaryButterController::class, 'create'])->name('military-butter.create');
+$router->post('/military-butter/store', [MilitaryButterController::class, 'store'])->name('military-butter.store');
+$router->get('/military-butter/{id}', [MilitaryButterController::class, 'show'])->name('military-butter.show');
+$router->get('/military-butter/edit/{id}', [MilitaryButterController::class, 'edit'])->name('military-butter.edit');
+$router->post('/military-butter/update/{id}', [MilitaryButterController::class, 'update'])->name('military-butter.update');
+$router->get('/military-butter/delete/{id}', [MilitaryButterController::class, 'delete'])->name('military-butter.delete');
+
+// CRUD для антифризов
+$router->get('/military-antifreeze', [MilitaryAntifreezeController::class, 'index'])->name('military-antifreeze.index');
+$router->get('/military-antifreeze/create', [MilitaryAntifreezeController::class, 'create'])->name('military-antifreeze.create');
+$router->post('/military-antifreeze/store', [MilitaryAntifreezeController::class, 'store'])->name('military-antifreeze.store');
+
+// Записи антифриза (до {id} чтобы не перехватывались)
+$router->get('/military-antifreeze/records', [MilitaryAntifreezeController::class, 'recordIndex'])->name('military-antifreeze.records');
+$router->get('/military-antifreeze/records/create', [MilitaryAntifreezeController::class, 'recordCreate'])->name('military-antifreeze.records.create');
+$router->post('/military-antifreeze/records/store', [MilitaryAntifreezeController::class, 'recordStore'])->name('military-antifreeze.records.store');
+$router->get('/military-antifreeze/records/edit/{id}', [MilitaryAntifreezeController::class, 'recordEdit'])->name('military-antifreeze.records.edit');
+$router->post('/military-antifreeze/records/update/{id}', [MilitaryAntifreezeController::class, 'recordUpdate'])->name('military-antifreeze.records.update');
+$router->get('/military-antifreeze/records/delete/{id}', [MilitaryAntifreezeController::class, 'recordDelete'])->name('military-antifreeze.records.delete');
+
+$router->get('/military-antifreeze/{id}', [MilitaryAntifreezeController::class, 'show'])->name('military-antifreeze.show');
+$router->get('/military-antifreeze/edit/{id}', [MilitaryAntifreezeController::class, 'edit'])->name('military-antifreeze.edit');
+$router->post('/military-antifreeze/update/{id}', [MilitaryAntifreezeController::class, 'update'])->name('military-antifreeze.update');
+$router->get('/military-antifreeze/delete/{id}', [MilitaryAntifreezeController::class, 'delete'])->name('military-antifreeze.delete');
+
+// Временные маршруты для масла
+$router->post('/military-ticket/temp-add-butter', [MilitaryTicketController::class, 'tempAddButter']);
+$router->get('/military-ticket/temp-get-butter/{tempId}', [MilitaryTicketController::class, 'tempGetButter']);
+$router->delete('/military-ticket/temp-remove-butter', [MilitaryTicketController::class, 'tempRemoveButter']);
 
 // CRUD для техники
 $router->get('/military-machine', [MilitaryModelMachineController::class, 'index'])->name('military-machine.index');
