@@ -12,6 +12,10 @@ use App\Models\OperationalCard\MilitaryTicketLocal;
 use App\Models\OperationalCard\MilitaryTicketOther;
 use App\Models\OperationalCard\MilitaryTicketPlaces;
 use App\Models\OperationalCard\MilitaryUnit;
+use App\Models\OperationalCard\MilitaryButter;
+use App\Models\OperationalCard\MilitaryTicketButter;
+use App\Models\OperationalCard\MilitaryAntifreeze;
+use App\Models\OperationalCard\MilitaryTicketAntifreeze;
 
 class MilitaryReportController extends Controller
 {
@@ -26,6 +30,10 @@ class MilitaryReportController extends Controller
     private MilitaryTicketLocal $ticketLocalModel;
     private MilitaryTicketOther $ticketOtherModel;
     private MilitaryTicketPlaces $ticketPlacesModel;
+    private MilitaryButter $butterModel;
+    private MilitaryTicketButter $ticketButterModel;
+    private MilitaryAntifreeze $antifreezeModel;
+    private MilitaryTicketAntifreeze $ticketAntifreezeModel;
     public function __construct()
     {
         parent::__construct();
@@ -40,6 +48,10 @@ class MilitaryReportController extends Controller
         $this->ticketLocalModel = new MilitaryTicketLocal();
         $this->ticketOtherModel = new MilitaryTicketOther();
         $this->ticketPlacesModel = new MilitaryTicketPlaces();
+        $this->butterModel = new MilitaryButter();
+        $this->ticketButterModel = new MilitaryTicketButter();
+        $this->antifreezeModel = new MilitaryAntifreeze();
+        $this->ticketAntifreezeModel = new MilitaryTicketAntifreeze();
     }
 
     public function printSelect(): void
@@ -107,7 +119,27 @@ class MilitaryReportController extends Controller
             $data['fuelOtherPlace'][$f['id']] = $f;
         }
 
+        // Загружаем справочник масел
+        $butters = $this->butterModel->all();
+        $data['ButterModel'] = [];
+        foreach ($butters as $b) {
+            $data['ButterModel'][$b['id']] = $b;
+        }
 
+        // Загружаем справочник антифризов
+        $antifreezes = $this->antifreezeModel->all();
+        $data['AntifreezeModel'] = [];
+        foreach ($antifreezes as $a) {
+            $data['AntifreezeModel'][$a['id']] = $a;
+        }
+
+        // Загружаем записи антифризов за период
+        $antifreezeRecords = $this->ticketAntifreezeModel->query()
+            ->where('date', '>=', $startDate)
+            ->where('date', '<=', $endDate)
+            ->orderBy('date')
+            ->get();
+        $data['ticketAntifreezeModel'] = $antifreezeRecords ?? [];
 
         if (empty($data['ModelMachineTicket'])) {
             $_SESSION['error'] = 'За указанный период нет данных для печати';
@@ -119,7 +151,7 @@ class MilitaryReportController extends Controller
             $data['ticketLocalModel'][$datum['id']] = $this->ticketLocalModel->getAllToParentId($datum['id']);
             $data['ticketOtherModel'][$datum['id']] = $this->ticketOtherModel->getAllToParentId($datum['id']);
             $data['ticketPlacesModel'][$datum['id']] = $this->ticketPlacesModel->getAllToParentId($datum['id']);
-
+            $data['ticketButterModel'][$datum['id']] = $this->ticketButterModel->getAllToParentId($datum['id']);
         }
         // Подключаем шаблон для печати
         $data['startDate'] = $startDate;
