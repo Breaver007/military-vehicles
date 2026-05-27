@@ -122,8 +122,8 @@
     }
     // Техника
     $machinesData = [];
-
     foreach ($data['ModelMachineTicket'] as $ticket) {
+        $machineTicketNumbers[$ticket['m_model_machine']][$ticket['id']] = $ticket['number_ticket'];
         $machineId = $ticket['m_model_machine'];
         $fuelId = $data['ModelMachine'][$machineId]['m_fuel'] ?? null;
 
@@ -145,6 +145,7 @@
                 'kilometres' => 0,
                 'fuel' => 0,
                 'oilSpent' => [],
+                'm_fuel' => $data['ModelMachine'][$machineId]['m_fuel'] ?? '',
             ];
         }
         $machinesData[$machineId]['kilometres'] += floatval($ticket['kilometres_speedometer'] ?? 0);
@@ -176,6 +177,7 @@
                 'fuel' => 0,
                 'oilSpent' => [],
                 'afSpent' => 0,
+                'm_fuel' => $data['ModelMachine'][$machineId]['m_fuel'] ?? '',
             ];
         }
         if (!isset($machinesData[$afMachineId]['afSpent'])) {
@@ -561,99 +563,213 @@
                 </td>
             <?php endforeach; ?>
         </tr>
-        <tr>
+        <tr class="text-center">
             <td class="text-center">10</td>
             <td>Фактический расход</td>
             <td>Путевой лист</td>
             <td class="small">
                 <?php
-                foreach ($machinesData as $idMachines => $dataMachines) {
-                    ?>
-                    <p><span class="fw-bold"><?=$dataMachines['name']?></span><?= ": " . $dataMachines['registr_plate']?></p>
-                    <?php
+                $strTicNum = '';
+                foreach ($machineTicketNumbers as $idMachines => $modelTicketNumber) {
+                    foreach ($modelTicketNumber as $idTicket => $ticketNumber) {
+                        $strTicNum .= $ticketNumber . ", ";
                     }
+                    ?>
+                    <p>
+                        <span class="fw-bold">
+                            <?= $machinesData[$idMachines]['name'] ?>:
+                       </span>
+                        <?= substr($strTicNum, 0, -2)  ?>.
+                    </p>
+                    <?php
+                }
                 ?>
             </td>
-            <td>
-                <?php foreach ($fuels as $f) echo $f['name'] . ': ' . number_format($f['spent_fuel'], 1, '.', ' ') . '; '; ?>
-                <?php foreach ($oils as $o) if ($o['taken'] > 0) echo $o['name'] . ': ' . number_format($o['spent'], 1, '.', ' ') . '; '; ?>
-            </td>
+            <?php
+            foreach ($fuels as $f) {
+                if ($f['spent_fuel'] > 0) {
+                    ?>
+                    <td>
+                        <?= number_format($f['spent_fuel'], 1, '.', ' ') ?>
+                    </td>
+                    <?php
+                }
+            }
+            foreach ($oils as $o) {
+                if ($o['taken'] > 0) {
+                    ?>
+                    <td>
+                        <?= number_format($o['taken'], 1, '.', ' ') ?>
+                    </td>
+                    <?php
+                }
+            } ?>
         </tr>
-        <tr class="fw-bold">
-            <td colspan="5" class="text-right">Всего по графе 10:</td>
-            <td>
-                <?php foreach ($fuels as $f) echo $f['name'] . ': ' . number_format($f['spent_fuel'], 1, '.', ' ') . '; '; ?>
-                <?php foreach ($oils as $o) if ($o['taken'] > 0) echo $o['name'] . ': ' . number_format($o['spent'], 1, '.', ' ') . '; '; ?>
-            </td>
+        <tr class="fw-bold text-center">
+            <td colspan="4" class="text-start">Всего по графе 10:</td>
+            <?php
+            foreach ($fuels as $f) {
+                if ($f['spent_fuel'] > 0) {
+                    ?>
+                    <td>
+                        <?= number_format($f['spent_fuel'], 1, '.', ' ') ?>
+                    </td>
+                    <?php
+                }
+            }
+            foreach ($oils as $o) {
+                if ($o['taken'] > 0) {
+                    ?>
+                    <td>
+                        <?= number_format($o['taken'], 1, '.', ' ') ?>
+                    </td>
+                    <?php
+                }
+            } ?>
         </tr>
-        <tr>
-            <td class="text-center">11</td>
-            <td>Передано другим в/ч</td>
+        <tr class="text-center">
+            <td class="text-center" rowspan="2">11</td>
+            <td></td>
             <td>-</td>
-            <td>Накладная</td>
-            <td>№ ___ от __.__.20__</td>
-            <td>
-                <?php foreach ($fuels as $f) if ($f['transferred'] > 0) echo $f['name'] . ': ' . number_format($f['transferred'], 1, '.', ' ') . '; '; ?>
-            </td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
         </tr>
-        <tr>
+        <tr class="text-center">
+            <td></td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr class="fw-bold text-center">
+            <td colspan="4" class="text-start">Всего по графе 11:</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+            <td>-</td>
+        </tr>
+        <tr class="text-center">
             <td class="text-center">12</td>
-            <td>Прочий расход</td>
             <td>Замена масла</td>
             <td>АКТ</td>
-            <td>__.__.20__</td>
-            <td><?php foreach ($oils as $o) if ($o['taken'] > 0) echo $o['name'] . ': ' . number_format($o['spent'], 1, '.', ' ') . '; '; ?></td>
+            <td>-</td>
+            <?php
+            foreach ($fuels as $f) {
+                if ($f['spent_fuel'] > 0) {
+                    ?>
+                    <td>-</td>
+                    <?php
+                }
+            }
+            foreach ($oils as $o) {
+                if ($o['taken'] > 0) {
+                    ?>
+                    <td>
+                        <?= number_format($o['taken'], 1, '.', ' ') ?>
+                    </td>
+                    <?php
+                }
+            } ?>
+        </tr>
+        <tr class="fw-bold text-center">
+            <td colspan="4" class="text-start">Всего по графе 12:</td>
+            <?php
+            foreach ($fuels as $f) {
+                if ($f['spent_fuel'] > 0) {
+                    ?>
+                    <td>-</td>
+                    <?php
+                }
+            }
+            foreach ($oils as $o) {
+                if ($o['taken'] > 0) {
+                    ?>
+                    <td>
+                        <?= number_format($o['taken'], 1, '.', ' ') ?>
+                    </td>
+                    <?php
+                }
+            } ?>
         </tr>
         </tbody>
     </table>
-
     <!-- Таблица 3: Расход по технике -->
-    <h6 class="text-center fw-bold mt-4">РАСХОД ПО ТЕХНИКЕ</h6>
     <table class="table-bordered w-100 mt-2">
         <thead>
         <tr>
             <th style="width: 25px;">№ п/п</th>
-            <th>Наименование техники</th>
-            <th>Марка, модель</th>
-            <th>Номер техники</th>
+            <th>Наименование техники (агрегата)</th>
+            <th>Марка, модель техники (агрегата)</th>
+            <th>Номер техники (агрегата)</th>
             <th>Отработано км/ч</th>
-            <th>Всего топлива</th>
-            <?php foreach ($data['ButterModel'] as $butter): ?>
-                <th><?= $butter['name'] ?></th>
+            <?php foreach ($allMaterials as $mat): ?>
+                <th class="vertical-mode" style="width: 120px;"><span class="rotated"><?= $mat['name'] ?></span></th>
             <?php endforeach; ?>
-            <th>Антифриз</th>
         </tr>
         </thead>
         <tbody>
-        <?php $mNum = 1; ?>
-        <?php foreach ($machinesData as $machine): ?>
-            <tr>
+        <?php
+        $mNum = 1;
+        $allTable3 = [];?>
+        <?php foreach ($machinesData as $machine):
+            ?>
+            <tr class="text-center">
                 <td class="text-center"><?= $mNum++ ?></td>
-                <td><?= $machine['name'] ?></td>
+                <td class="text-start"><?= $machine['name'] ?></td>
                 <td><?= $machine['model'] ?></td>
                 <td><?= $machine['registr_plate'] ?></td>
-                <td class="text-right"><?= number_format($machine['kilometres'], 0, '.', ' ') ?></td>
-                <td class="text-right"><?= number_format($machine['fuel'], 1, '.', ' ') ?></td>
-                <?php foreach ($data['ButterModel'] as $butter): ?>
-                    <td class="text-right"><?= isset($machine['oilSpent'][$butter['id']]) ? number_format($machine['oilSpent'][$butter['id']], 1, '.', ' ') : '-' ?></td>
+                <td><?= number_format($machine['kilometres'], 0, '.', ' ') ?></td>
+                <?php foreach ($allMaterials as $mat):
+                    ?>
+                    <td>
+                      <?php
+                      if ($mat['type'] == 'fuel') {
+                          if ($machine['m_fuel'] == $mat['id']) {
+                              // Initialize the key if it doesn't exist
+                              if (!isset($allTable3[$mat['id']]['fuel'])) {
+                                  $allTable3[$mat['id']]['fuel'] = 0;
+                              }
+                              $allTable3[$mat['id']]['fuel'] += $machine['fuel'];
+                              echo $machine['fuel'];
+                          } else {
+                              echo "-";
+                          }
+                      } elseif ($mat['type'] == 'oil') {
+                          if (!isset($allTable3[$mat['id']]['oilSpent'])) {
+                              $allTable3[$mat['id']]['oilSpent'] = 0;
+                          }
+                          if(isset($machine['oilSpent'][$mat['id']])){
+                              $oilAmount = isset($machine['oilSpent'][$mat['id']]) ? $machine['oilSpent'][$mat['id']] : 0;
+                              $allTable3[$mat['id']]['oilSpent'] += $oilAmount;
+                              echo $oilAmount;
+                          }else{
+                              echo "-";
+                          }
+                      }
+                      ?>
+                    </td>
                 <?php endforeach; ?>
-                <td class="text-right"><?= isset($machine['afSpent']) ? number_format($machine['afSpent'], 1, '.', ' ') : '-' ?></td>
             </tr>
         <?php endforeach; ?>
-        <tr class="fw-bold">
-            <td colspan="4" class="text-right">Всего:</td>
-            <td class="text-right"><?= number_format(array_sum(array_column($machinesData, 'kilometres')), 0, '.', ' ') ?></td>
-            <td class="text-right"><?= number_format(array_sum(array_column($machinesData, 'fuel')), 1, '.', ' ') ?></td>
-            <?php foreach ($data['ButterModel'] as $butter): ?>
-                <td class="text-right"><?php
-                    $totalOil = array_sum(array_map(fn($m) => $m['oilSpent'][$butter['id']] ?? 0, $machinesData));
-                    echo number_format($totalOil, 1, '.', ' ');
-                ?></td>
+        <tr class="fw-bold text-center">
+            <td colspan="4" class="text-start">Всего:</td>
+            <td><?= number_format(array_sum(array_column($machinesData, 'kilometres')), 0, '.', ' ') ?></td>
+            <?php foreach ($allMaterials as $mat): ?>
+                <td>
+                    <?php
+                    if ($mat['type'] == 'fuel') {
+                        echo isset($allTable3[$mat['id']]['fuel']) && $allTable3[$mat['id']]['fuel'] !== '' ? $allTable3[$mat['id']]['fuel'] : "-";
+                    } elseif ($mat['type'] == 'oil') {
+                    echo isset($allTable3[$mat['id']]['oilSpent']) && $allTable3[$mat['id']]['oilSpent'] !== '' ? $allTable3[$mat['id']]['oilSpent'] : "-";
+                    }
+                    ?>
+                </td>
             <?php endforeach; ?>
-            <td class="text-right"><?php
-                $totalAf = array_sum(array_map(fn($m) => $m['afSpent'] ?? 0, $machinesData));
-                echo number_format($totalAf, 1, '.', ' ');
-            ?></td>
         </tr>
         </tbody>
     </table>
