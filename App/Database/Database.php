@@ -5,29 +5,34 @@ class Database
 {
     private static ?\PDO $connection = null;
 
-    private static array $config = [
-        'host' => '127.0.1.14',
-        'dbname' => 'military-vehicles',
-        'username' => 'root',
-        'password' => '',
-        'charset' => 'utf8mb4'
-    ];
+    private static function getConfig(): array
+    {
+        return [
+            'host' => $_ENV['DB_HOST'] ?? '127.0.0.1',
+            'dbname' => $_ENV['DB_NAME'] ?? 'military-vehicles',
+            'username' => $_ENV['DB_USERNAME'] ?? 'root',
+            'password' => $_ENV['DB_PASSWORD'] ?? '',
+            'charset' => $_ENV['DB_CHARSET'] ?? 'utf8mb4',
+        ];
+    }
 
     public static function getConnection(): \PDO
     {
         if (self::$connection === null) {
             try {
+                $config = self::getConfig();
+
                 $dsn = sprintf(
                     'mysql:host=%s;dbname=%s;charset=%s',
-                    self::$config['host'],
-                    self::$config['dbname'],
-                    self::$config['charset']
+                    $config['host'],
+                    $config['dbname'],
+                    $config['charset']
                 );
 
                 self::$connection = new \PDO(
                     $dsn,
-                    self::$config['username'],
-                    self::$config['password'],
+                    $config['username'],
+                    $config['password'],
                     [
                         \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
                         \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,

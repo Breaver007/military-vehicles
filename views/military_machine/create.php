@@ -69,7 +69,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-md-4 mb-3">
                                 <label for="order" class="form-label">Порядок сортировки *</label>
                                 <input type="number"
                                        class="form-control"
@@ -79,6 +79,27 @@
                                        step="10"
                                        required>
                                 <small class="text-muted">Рекомендуется использовать шаг 10</small>
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="linear_norm" class="form-label">Линейная норма</label>
+                                <input type="number"
+                                       class="form-control"
+                                       id="linear_norm"
+                                       name="linear_norm"
+                                       value="<?= htmlspecialchars($_SESSION['old']['linear_norm'] ?? '') ?>"
+                                       step="0.01"
+                                       min="0"
+                                       placeholder="0.00">
+                            </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label for="release_date" class="form-label">Дата выпуска</label>
+                                <input type="date"
+                                       class="form-control"
+                                       id="release_date"
+                                       name="release_date"
+                                       value="<?= htmlspecialchars($_SESSION['old']['release_date'] ?? '') ?>">
                             </div>
                         </div>
 

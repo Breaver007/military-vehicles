@@ -22,7 +22,7 @@
                 <div class="col-sm-10 col-md-10 col-lg-10 col-xl-10 col-xxl-10 d-flex align-items-center justify-content-between">
                     <div>
                         <a href="/military-ticket"
-                           class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Потевые листы</a>
+                           class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Путевые листы</a>
                         <a href="/military-ticket/print-select/"
                            class="link-light link-offset-2 link-underline-opacity-25 link-underline-opacity-75-hover">Эксплуатационная
                             карточка</a>
@@ -71,12 +71,26 @@
                                <a href="/military-ticket-from-local-other"
                                   class="dropdown-item">Прочие заправки</a>
                            </li>
-                          <li>
-                              <a href="/military-machine"
-                                 class="dropdown-item">Техника
-                              </a>
-                          </li>
-                      </ul>
+                           <li>
+                               <a href="/military-machine"
+                                  class="dropdown-item">Техника
+                               </a>
+                           </li>
+                           <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a href="/project-update"
+                                   class="dropdown-item">
+                                    <i class="bi bi-arrow-repeat"></i> Обновить проект
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li>
+                                <a href="/military-migration"
+                                   class="dropdown-item">
+                                    <i class="bi bi-database"></i> Миграции SQL
+                                </a>
+                            </li>
+                        </ul>
                   </div>
 
 <!--                    -->

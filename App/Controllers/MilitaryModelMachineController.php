@@ -73,6 +73,8 @@ class MilitaryModelMachineController extends Controller
             'm_fuel' => (int)$_POST['m_fuel'],
             'name' => trim($_POST['name']),
             'registr_plate' => trim($_POST['registr_plate']),
+            'linear_norm' => !empty($_POST['linear_norm']) ? (float)$_POST['linear_norm'] : null,
+            'release_date' => !empty($_POST['release_date']) ? $_POST['release_date'] : null,
             'order' => (int)$_POST['order'],
             'data_edit' => date('Y-m-d H:i:s'),
             'is_active' => 1
@@ -158,6 +160,8 @@ class MilitaryModelMachineController extends Controller
             'm_fuel' => (int)$_POST['m_fuel'],
             'name' => trim($_POST['name']),
             'registr_plate' => trim($_POST['registr_plate']),
+            'linear_norm' => !empty($_POST['linear_norm']) ? (float)$_POST['linear_norm'] : null,
+            'release_date' => !empty($_POST['release_date']) ? $_POST['release_date'] : null,
             'order' => (int)$_POST['order'],
             'is_active' => $_POST['is_active'] ?? 0,
             'data_edit' => date('Y-m-d H:i:s')
@@ -218,6 +222,14 @@ class MilitaryModelMachineController extends Controller
             $errors['order'] = 'Порядок сортировки обязателен';
         } elseif (!is_numeric($data['order'])) {
             $errors['order'] = 'Порядок сортировки должен быть числом';
+        }
+
+        if (!empty($data['linear_norm']) && !is_numeric($data['linear_norm'])) {
+            $errors['linear_norm'] = 'Линейная норма должна быть числом';
+        }
+
+        if (!empty($data['release_date']) && !preg_match('/^\d{4}-\d{2}-\d{2}$/', $data['release_date'])) {
+            $errors['release_date'] = 'Дата выпуска должна быть в формате ГГГГ-ММ-ДД';
         }
 
         return $errors;

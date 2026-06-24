@@ -32,6 +32,8 @@
                                 <th>Модель</th>
                                 <th>Рег. номер</th>
                                 <th>Топливо</th>
+                                <th>Линейная норма</th>
+                                <th>Дата выпуска</th>
                                 <th>Порядок</th>
                                 <th>Дата редактирования</th>
                                 <th>Статус</th>
@@ -46,6 +48,8 @@
                                     <td><?= htmlspecialchars($machine['name']) ?></td>
                                     <td><?= htmlspecialchars($machine['registr_plate']) ?></td>
                                     <td><?= htmlspecialchars($machine['fuel_name'] ?? '') ?></td>
+                                    <td><?= isset($machine['linear_norm']) ? number_format($machine['linear_norm'], 2, '.', '') : '—' ?></td>
+                                    <td><?= isset($machine['release_date']) ? date('d.m.Y', strtotime($machine['release_date'])) : '—' ?></td>
                                     <td><?= $machine['order'] ?></td>
                                     <td><?= $machine['data_edit'] ?></td>
                                     <td>

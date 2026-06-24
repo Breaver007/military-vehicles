@@ -12,6 +12,8 @@ use App\Controllers\MilitaryTicketFromLocalOtherController;
 use App\Controllers\MilitaryButterController;
 use App\Controllers\MilitaryAntifreezeController;
 use App\Controllers\MilitaryTicketFromLocalStockController;
+use App\Controllers\ProjectUpdateController;
+use App\Controllers\MilitaryMigrationController;
 
 /** @var App\Routeer\Router $router */
 
@@ -115,6 +117,18 @@ $router->get('/military-antifreeze/delete/{id}', [MilitaryAntifreezeController::
 $router->post('/military-ticket/temp-add-butter', [MilitaryTicketController::class, 'tempAddButter']);
 $router->get('/military-ticket/temp-get-butter/{tempId}', [MilitaryTicketController::class, 'tempGetButter']);
 $router->delete('/military-ticket/temp-remove-butter', [MilitaryTicketController::class, 'tempRemoveButter']);
+
+// Обновление проекта
+$router->get('/project-update', [ProjectUpdateController::class, 'index'])->name('project-update.index');
+$router->post('/project-update/run', [ProjectUpdateController::class, 'run'])->name('project-update.run');
+
+// Миграции SQL
+$router->get('/military-migration', [MilitaryMigrationController::class, 'index'])->name('military-migration.index');
+$router->get('/military-migration/create', [MilitaryMigrationController::class, 'create'])->name('military-migration.create');
+$router->post('/military-migration/store', [MilitaryMigrationController::class, 'store'])->name('military-migration.store');
+$router->get('/military-migration/execute/{id}', [MilitaryMigrationController::class, 'execute'])->name('military-migration.execute');
+$router->get('/military-migration/delete/{id}', [MilitaryMigrationController::class, 'delete'])->name('military-migration.delete');
+$router->get('/military-migration/{id}', [MilitaryMigrationController::class, 'show'])->name('military-migration.show');
 
 // CRUD для техники
 $router->get('/military-machine', [MilitaryModelMachineController::class, 'index'])->name('military-machine.index');

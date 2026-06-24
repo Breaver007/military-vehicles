@@ -40,6 +40,14 @@
                             <td><?= $machine['order'] ?></td>
                         </tr>
                         <tr>
+                            <th>Линейная норма</th>
+                            <td><?=isset($machine['linear_norm']) ? number_format($machine['linear_norm'], 2, '.', '') : '—' ?></td>
+                        </tr>
+                        <tr>
+                            <th>Дата выпуска</th>
+                            <td><?= isset($machine['release_date']) ? date('d.m.Y', strtotime($machine['release_date'])) : '—' ?></td>
+                        </tr>
+                        <tr>
                             <th>Дата редактирования</th>
                             <td><?= $machine['data_edit'] ?></td>
                         </tr>
