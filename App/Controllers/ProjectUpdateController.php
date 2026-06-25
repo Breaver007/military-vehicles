@@ -16,8 +16,11 @@ class ProjectUpdateController extends Controller
 
         $rootDir = realpath(__DIR__ . '/../..');
 
+        // Ссылка на git-репозиторий (замени на свою)
+        $gitRemoteUrl = 'https://github.com/Breaver007/military-vehicles.git';
+
         if (is_dir($rootDir . '/.git')) {
-            $commands[] = "cd " . escapeshellarg($rootDir) . " && git pull 2>&1";
+            $commands[] = "cd " . escapeshellarg($rootDir) . " && git remote set-url origin " . escapeshellarg($gitRemoteUrl) . " && git pull 2>&1";
         }
 
         if (is_file($rootDir . '/composer.json')) {
