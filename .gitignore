@@ -1,0 +1,39 @@
+# Окружение
+.env
+.env.local
+.env.*.local
+
+# Зависимости
+/vendor/
+
+# Логи
+*.log
+/logs/
+
+# Кэш
+/cache/
+*.cache
+
+# OSPanel / Windows
+Thumbs.db
+Desktop.ini
+*.lnk
+
+# IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+
+# Временные файлы
+*.tmp
+*.bak
+*.swp
+~$*
+
+# Загрузки пользователей (если не нужны в репо)
+/uploads/
+
+# Скомпилированные ассеты (если используешь)
+/public/build/
+/dist/
