@@ -11,28 +11,67 @@ class ProjectUpdateController extends Controller
 
     public function run(): void
     {
-        $output = [];
-        $commands = [];
+        $gitPath = 'C:\Program Files\Git\bin';
+        putenv('PATH=' . getenv('PATH') . PATH_SEPARATOR . $gitPath);
+        putenv('PATH=' . getenv('PATH') . PATH_SEPARATOR . 'C:\Program Files\Git\cmd');
+
+        // Проверяем, что Git теперь работает
+        exec('git --version 2>&1', $testOutput, $testCode);
+        if ($testCode !== 0) {
+            $_SESSION['update_output'] = '❌ Git не найден! Установите Git: https://git-scm.com/download/win';
+            $this->redirect('/project-update');
+            return;
+        }
 
         $rootDir = realpath(__DIR__ . '/../..');
-
-        // Ссылка на git-репозиторий (замени на свою)
         $gitRemoteUrl = 'https://github.com/Breaver007/military-vehicles.git';
+        $allOutput = '';
+
+        // Функция для конвертации вывода
+        $convertOutput = function($output) {
+            // Пробуем разные кодировки
+            $encodings = ['CP866', 'Windows-1251', 'KOI8-R'];
+            foreach ($encodings as $encoding) {
+                $converted = @iconv($encoding, 'UTF-8//IGNORE', $output);
+                if ($converted !== false && $converted !== '') {
+                    return $converted;
+                }
+            }
+            // Если ничего не помогло - возвращаем как есть
+            return $output;
+        };
+
+        // Команды
+        $commands = [];
 
         if (is_dir($rootDir . '/.git')) {
-            $commands[] = "cd " . escapeshellarg($rootDir) . " && git remote set-url origin " . escapeshellarg($gitRemoteUrl) . " && git pull 2>&1";
+            $commands[] = "cd " . escapeshellarg($rootDir) . " && git pull " . escapeshellarg($gitRemoteUrl);
         }
 
         if (is_file($rootDir . '/composer.json')) {
-            $commands[] = "cd " . escapeshellarg($rootDir) . " && composer install 2>&1";
+            $commands[] = "cd " . escapeshellarg($rootDir) . " && composer install";
         }
 
-        $allOutput = '';
         foreach ($commands as $cmd) {
             $cmdOutput = [];
-            exec($cmd, $cmdOutput, $exitCode);
+            $exitCode = 0;
+
+            // Добавляем переключение кодировки для Windows
+            if (strtoupper(substr(PHP_OS, 0, 3)) === 'WIN') {
+                // Для Windows - меняем кодировку консоли
+                exec('chcp 65001 > NUL');
+            }
+
+            exec($cmd . ' 2>&1', $cmdOutput, $exitCode);
+
+            // Конвертируем каждую строку вывода
+            $convertedOutput = [];
+            foreach ($cmdOutput as $line) {
+                $convertedOutput[] = $convertOutput($line);
+            }
+
             $allOutput .= '$ ' . $cmd . PHP_EOL;
-            $allOutput .= implode(PHP_EOL, $cmdOutput) . PHP_EOL;
+            $allOutput .= implode(PHP_EOL, $convertedOutput) . PHP_EOL;
             $allOutput .= 'Exit code: ' . $exitCode . PHP_EOL . PHP_EOL;
         }
 

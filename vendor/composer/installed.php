@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'military-vehicles/app',
-        'pretty_version' => '1.0.0+no-version-set',
-        'version' => '1.0.0.0',
-        'reference' => null,
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => 'c4ff006a9b5222f8112f3c2437c12629a9603613',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -56,9 +56,9 @@
             'dev_requirement' => false,
         ),
         'military-vehicles/app' => array(
-            'pretty_version' => '1.0.0+no-version-set',
-            'version' => '1.0.0.0',
-            'reference' => null,
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => 'c4ff006a9b5222f8112f3c2437c12629a9603613',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
