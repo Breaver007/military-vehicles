@@ -69,7 +69,10 @@ $months = [
                                     ?>
                                     <a href="/military-ticket/<?= $ModelMachine['id'] ?>/<?= date('n') ?>/<?= date('Y') ?>"
                                        class="list-group-item list-group-item-action list-group-item-primary">
-                                        <?= $ModelMachine['name'] ?>
+                                        <?= $ModelMachine['name']  ?>
+                                        <span class="small">
+                                            (<?= $ModelMachine['registr_plate']?>)
+                                        </span>
                                     </a>
                                     <?php
                                 }
@@ -149,6 +152,7 @@ $months = [
                     </div>
                 </div>
                 <div class="row row-cols-3">
+<!--                    --><?// dd($data)?>
                     <div><?= isset($data['MilitaryModelMachine'][$data['id']]) ? $data['MilitaryModelMachine'][$data['id']]['name'] : "" ?>
                     </div>
                     <div class="text-center fw-bold">

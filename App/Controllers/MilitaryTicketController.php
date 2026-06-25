@@ -365,7 +365,7 @@ class MilitaryTicketController extends Controller
                 ->get()
             ,
             'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
-            'MilitaryModelMachine' => $this->machineModel->where('is_active', '=', 1),
+            'MilitaryModelMachine' => $this->machineModel->getBust(),
             'MilitaryFuel' => $this->fuelModel->where('is_active', '=', 1),
             'MilitaryUnit' => $this->unitModel->where('is_active', '=', 1),
         ];

@@ -65,4 +65,17 @@ class MilitaryModelMachine extends Model
         return $result['max_order'] ?? 0;
     }
 
+    public function getBust()
+    {
+        $data = [];
+        $sqlData = $this->where('is_active', '=', 1);
+        if (!$sqlData) {
+            return [];
+        }
+        foreach ($sqlData as $index => $item) {
+            $data[$item[$this->primaryKey]] = $item;
+        }
+        return $data;
+    }
+
 }
