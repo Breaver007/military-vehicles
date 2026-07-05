@@ -78,6 +78,7 @@ class MilitaryTicketController extends Controller
         $formattedMonth = sprintf("%02d", $month);
         $MaxKilometres = $this->ticketModel->getMaxKilometres($id);
         $OpeningBalanceFuel = $this->ticketModel->getOpeningBalanceFuel($id);
+        $machine = $this->machineModel->findWithRelations($id);
 
         // Генерируем временный ID для сессии
         $tempId = uniqid('temp_', true);
@@ -100,7 +101,7 @@ class MilitaryTicketController extends Controller
             'year' => $year,
             'maxKilometres' => $MaxKilometres,
             'maxOpeningBalanceFuel' => $OpeningBalanceFuel,
-            'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
+            'machine' => $machine,
             'MilitaryButter' => $this->butterModel->where('is_active', '=', 1),
             'MilitaryLocalStock' => $this->localStockModel->where('is_active', '=', 1),
             'MilitaryFuelOtherPlaces' => $this->fuelOtherPlacesModel->where('is_active', '=', 1),
@@ -126,17 +127,19 @@ class MilitaryTicketController extends Controller
             'kilometres_speedometer_start' => $_POST['kilometres_speedometer_start'] ?: 0,
             'kilometres_speedometer_end' => $_POST['kilometres_speedometer_end'] ?: 0,
             'day_count' => $_POST['day_count'] ?: 0,
-            'm_norm' => $_POST['m_norm'] ?: 0,
+            'is_winter' => $_POST['is_winter'] ?? 0,
             'kilometres_city' => $_POST['kilometres_city'] ?: 0,
             'kilometres_trail' => $_POST['kilometres_trail'] ?: 0,
             'kilometres_ground' => $_POST['kilometres_ground'] ?: 0,
             'kilometres_linear' => $_POST['kilometres_linear'] ?: 0,
+            'kilometres_city_minsk' => $_POST['kilometres_city_minsk'] ?: 0,
             'kilometres_ticket' => $_POST['kilometres_ticket'] ?: 0,
             'ticket_write_off' => $_POST['ticket_write_off'] ?: 0,
             'calc_normal_city' => $_POST['calc_normal_city'] ?: 0,
             'calc_normal_trail' => $_POST['calc_normal_trail'] ?: 0,
             'calc_normal_ground' => $_POST['calc_normal_ground'] ?: 0,
             'calc_normal_linear' => $_POST['calc_normal_linear'] ?: 0,
+            'calc_normal_city_minsk' => $_POST['calc_normal_city_minsk'] ?: 0,
             'calc_normal_cargo' => $_POST['calc_normal_cargo'] ?: 0,
             'calc_normal_pump' => $_POST['calc_normal_pump'] ?: 0,
             'cargo_1' => $_POST['cargo_1'] ?: 0,
@@ -183,17 +186,21 @@ class MilitaryTicketController extends Controller
         // Валидация
         $errors = [];
         if (empty($data['m_model_machine'])) {
-            $errors['m_model_machine'] = 'Выберите технику';
-        }
-        if (empty($data['m_norm'])) {
-            $errors['m_norm'] = 'Выберети норму';
+            $errors = 'Выберите технику';
         }
         if (empty($data['data_ticket'])) {
-            $errors['data_ticket'] = 'Укажите дату';
+            $errors = 'Укажите дату';
         }
 
+        if (!empty($_POST['number_ticket']) && !empty($_POST['data_ticket'])) {
+            $numberTicket = trim($_POST['number_ticket']);
+            $dataTicket = $_POST['data_ticket'];
+            if ($this->ticketModel->isNumberTicketExistsInYear($numberTicket, $dataTicket, null)) {
+                $errors = 'Номер путевого листа уже использовался в течение последнего года.';
+            }
+        }
         if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
+            $_SESSION['error'] = $errors;
             $_SESSION['old'] = $_POST;
             $this->redirect("/military-ticket/{$modelMachine}/{$month}/{$year}");
         }
@@ -286,7 +293,6 @@ class MilitaryTicketController extends Controller
         $data = [
             'title' => 'Эксплуатационная карточка',
             'id' => $id,
-            'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
             'MilitaryModelMachine' => $this->machineModel->where('is_active', '=', 1),
             'MilitaryFuel' => $this->fuelModel->where('is_active', '=', 1),
             'MilitaryUnit' => $this->unitModel->where('is_active', '=', 1),
@@ -338,7 +344,6 @@ class MilitaryTicketController extends Controller
             'id' => $idModelMachine,
             'start_date' => $startDate,
             'end_date' => $endDate,
-            'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
             'MilitaryModelMachine' => $this->machineModel->where('is_active', '=', 1),
             'MilitaryFuel' => $this->fuelModel->where('is_active', '=', 1),
             'MilitaryUnit' => $this->unitModel->where('is_active', '=', 1),
@@ -364,7 +369,6 @@ class MilitaryTicketController extends Controller
                 ->orderBy('data_ticket')
                 ->get()
             ,
-            'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
             'MilitaryModelMachine' => $this->machineModel->getBust(),
             'MilitaryFuel' => $this->fuelModel->where('is_active', '=', 1),
             'MilitaryUnit' => $this->unitModel->where('is_active', '=', 1),
@@ -431,12 +435,14 @@ class MilitaryTicketController extends Controller
             'value' => $f['value']
         ], $ticketButterFuels);
 
+        $machine = $this->machineModel->findWithRelations($idModelMachine);
+
         $this->view('military_ticket/edit', [
             'title' => "Редактировать карточку №{$ticket['id']}",
             'data' => $machineData,
             'ticket' => $ticket,
             'temp_id' => $tempId,
-            'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
+            'machine' => $machine,
             'MilitaryButter' => $this->butterModel->where('is_active', '=', 1),
             'MilitaryLocalStock' => $this->localStockModel->where('is_active', '=', 1),
             'MilitaryFuelOtherPlaces' => $this->fuelOtherPlacesModel->where('is_active', '=', 1),
@@ -466,20 +472,18 @@ class MilitaryTicketController extends Controller
         $errors = [];
 
         if (empty($_POST['number_ticket'])) {
-            $errors['number_ticket'] = 'Укажите номер путевого листа';
+            $errors = 'Укажите номер путевого листа';
         }
 
         if (!empty($_POST['number_ticket']) && !empty($_POST['data_ticket'])) {
             $numberTicket = trim($_POST['number_ticket']);
             $dataTicket = $_POST['data_ticket'];
-
-             if ($this->ticketModel->isNumberTicketExistsInYear($numberTicket, $dataTicket, $id)) {
-                 $errors['number_ticket'] = 'Номер путевого листа уже использовался в течение последнего года.';
-             }
+            if ($this->ticketModel->isNumberTicketExistsInYear($numberTicket, $dataTicket, $id)) {
+                $errors = 'Номер путевого листа уже использовался в течение последнего года.';
+            }
         }
-
         if (!empty($errors)) {
-            $_SESSION['errors'] = $errors;
+            $_SESSION['error'] = $errors;
             $_SESSION['old'] = $_POST;
             $this->redirect("/military-ticket/edit/{$idModelMachine}/{$month}/{$year}/{$id}");
         }
@@ -488,14 +492,16 @@ class MilitaryTicketController extends Controller
             'm_model_machine' => (int)($_POST['m_model_machine']),
             'kilometres_speedometer_start' => (float)($_POST['kilometres_speedometer_start'] ?? $ticket['kilometres_speedometer_start'] ?? 0),
             'day_count' => (int)($_POST['day_count'] ?? $ticket['day_count'] ?? 1),
-            'm_norm' => (int)($_POST['m_norm'] ?? $ticket['m_norm'] ?? 0),
+            'is_winter' => (int)($_POST['is_winter'] ?? $ticket['is_winter'] ?? 0),
             'data_ticket' => $_POST['data_ticket'] ?? $ticket['data_ticket'] ?? date('Y-m-d'),
             'number_ticket' => $_POST['number_ticket'] ?? $ticket['number_ticket'] ?? '',
             'kilometres_city' => (float)($_POST['kilometres_city'] ?? $ticket['kilometres_city'] ?? 0),
             'kilometres_trail' => (float)($_POST['kilometres_trail'] ?? $ticket['kilometres_trail'] ?? 0),
             'kilometres_ground' => (float)($_POST['kilometres_ground'] ?? $ticket['kilometres_ground'] ?? 0),
             'kilometres_linear' => (float)($_POST['kilometres_linear'] ?? $ticket['kilometres_linear'] ?? 0),
+            'kilometres_city_minsk' => (float)($_POST['kilometres_city_minsk'] ?? $ticket['kilometres_city_minsk'] ?? 0),
             'kilometres_ticket' => (float)($_POST['kilometres_ticket'] ?? $ticket['kilometres_ticket'] ?? 0),
+            'calc_normal_city_minsk' => (float)($_POST['calc_normal_city_minsk'] ?? $ticket['calc_normal_city_minsk'] ?? 0),
             'cargo' => (float)($_POST['cargo'] ?? $ticket['cargo'] ?? 0),
             'cargo_no' => (float)($_POST['cargo_no'] ?? $ticket['cargo_no'] ?? 0),
             'kilometres_speedometer' => (float)($_POST['kilometres_speedometer'] ?? $ticket['kilometres_speedometer'] ?? 0),
@@ -1364,7 +1370,6 @@ class MilitaryTicketController extends Controller
             'id' => $idModelMachine,
             'month' => $month,
             'year' => $year,
-            'MilitaryNorm' => $this->normModel->where('is_active', '=', 1),
             'MilitaryModelMachine' => $this->machineModel->where('is_active', '=', 1),
             'MilitaryFuel' => $this->fuelModel->where('is_active', '=', 1),
             'MilitaryUnit' => $this->unitModel->where('is_active', '=', 1),

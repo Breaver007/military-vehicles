@@ -30,7 +30,8 @@
                             <input type="number" readonly required class="form-control" id="month" name="month" value="<?= $data['month'] ?>">
                         </div>
                         <div class="col-md-3">
-                            <div id="military-norms-data" data-norms='<?= json_encode($data['MilitaryNorm'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>'></div>
+                            <input type="hidden" id="machine_linear_norm" value="<?= $data['machine']['linear_norm'] ?? 0 ?>">
+                            <input type="hidden" id="machine_release_date" value="<?= $data['machine']['release_date'] ?? '' ?>">
                         </div>
                     </div>
                 </div>
@@ -44,7 +45,7 @@
                         <div class="row g-3">
                             <div class="col-sm-6 col-md-6">
                                 <label class="form-label small text-secondary">Дата</label>
-                                <input type="date" class="form-control" id="data_ticket" name="data_ticket" value="<?= date("{$data['year']}-{$data['month']}-d") ?>">
+                                    <input type="date" class="form-control" id="data_ticket" name="data_ticket" value="<?= date("{$data['year']}-{$data['month']}-d") ?>" onchange="updateCalcNormals()">
                             </div>
                             <div class="col-sm-6 col-md-6">
                                 <label class="form-label small text-secondary">Номер путевого листа</label>
@@ -83,20 +84,19 @@
                                 <label class="form-label small text-secondary">Кол-во дней</label>
                                 <input type="number" required class="form-control" id="day_count" name="day_count" placeholder="0">
                             </div>
-                            <div class="col-md-2">
-                                <label class="form-label small text-secondary">
-                                    Норма расхода
-                                    <span class="badge bg-info bg-opacity-10 text-info ms-1" data-bs-toggle="tooltip" title="Выбор нормы влияет на все расчеты">
-                                        <i class="bi bi-calculator-fill"></i> расчет
-                                    </span>
-                                </label>
-                                <select class="form-select" onchange="loadNorms()" required id="m_norm" name="m_norm">
-                                    <?php if ($data['MilitaryNorm']): ?>
-                                        <?php foreach ($data['MilitaryNorm'] as $dataNorm): ?>
-                                            <option value="<?= $dataNorm['id'] ?>"><?= $dataNorm['name'] ?></option>
-                                        <?php endforeach; ?>
-                                    <?php endif; ?>
-                                </select>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <div class="form-check form-switch mt-3 me-2">
+                                    <input class="form-check-input" type="checkbox" id="is_winter" name="is_winter" value="1" onchange="updateCalcNormals()">
+                                    <label class="form-check-label" for="is_winter">
+                                        <i class="bi bi-snow2"></i> Зима
+                                        <span class="badge bg-info bg-opacity-10 text-info ms-1" data-bs-toggle="tooltip" title="Зимний коэффициент +10%">
+                                            <i class="bi bi-calculator-fill"></i> +10%
+                                        </span>
+                                    </label>
+                                </div>
+                                <div id="age_indicator" class="small text-warning fw-bold d-none">
+                                    <i class="bi bi-exclamation-triangle-fill"></i> +8%
+                                </div>
                             </div>
                         </div>
 
@@ -122,6 +122,10 @@
                                 <div class="col-6 col-md-2">
                                     <label class="form-label small text-secondary">Линейная (км)</label>
                                     <input type="number" oninput="updateTicketKilometres()" min="0" class="form-control calc-field" id="kilometres_linear" name="kilometres_linear" placeholder="0">
+                                </div>
+                                <div class="col-6 col-md-2">
+                                    <label class="form-label small text-secondary">Город Минск (км)</label>
+                                    <input type="number" oninput="updateTicketKilometres()" min="0" class="form-control calc-field" id="kilometres_city_minsk" name="kilometres_city_minsk" placeholder="0">
                                 </div>
                                 <div class="col-6 col-md-2">
                                     <label class="form-label small text-secondary">Км по путевке</label>
@@ -152,14 +156,24 @@
                                     'trail' => 'Трасса',
                                     'ground' => 'Грунт',
                                     'linear' => 'Линейная',
+                                    'city_minsk' => 'Город Минск',
                                     'cargo' => 'Груз',
                                     'pump' => 'Насос'
+                                ];
+                                $defaultNorms = [
+                                    'city' => '0',
+                                    'trail' => '0',
+                                    'ground' => '0',
+                                    'linear' => '0',
+                                    'city_minsk' => '0',
+                                    'cargo' => '1.0',
+                                    'pump' => '11.5'
                                 ];
                                 foreach ($normFields as $key => $label):
                                     ?>
                                     <div class="col-6 col-md-2">
                                         <div class="input-group">
-                                            <span class="input-group-text bg-white" id="normal_<?= $key ?>">0</span>
+                                            <span class="input-group-text bg-white" id="normal_<?= $key ?>"><?= $defaultNorms[$key] ?></span>
                                             <input type="number" readonly class="form-control bg-light" id="calc_normal_<?= $key ?>" name="calc_normal_<?= $key ?>" placeholder="0">
                                         </div>
                                         <label class="small text-secondary mt-1"><?= $label ?></label>
@@ -389,9 +403,6 @@
             return new bootstrap.Tooltip(tooltipTriggerEl);
         });
 
-        loadNorms(<?= json_encode($data['MilitaryNorm']) ?>);
-        document.getElementById('m_norm').addEventListener('change', function() {
-            loadNorms(<?= json_encode($data['MilitaryNorm']) ?>);
-        });
+        updateCalcNormals();
     });
 </script>

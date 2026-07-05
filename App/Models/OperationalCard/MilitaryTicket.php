@@ -73,7 +73,6 @@ class MilitaryTicket extends Model
         // Рассчитываем дату год назад
         $oneYearAgo = date('Y-m-d', strtotime($currentDate . ' -1 year'));
         $oneYearLater = date('Y-m-d', strtotime($currentDate . ' +1 year'));
-
         $query = $this->query()
             ->where('number_ticket', '=', $numberTicket)
             ->where('data_ticket', '>=', $oneYearAgo)

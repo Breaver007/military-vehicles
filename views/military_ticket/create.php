@@ -25,6 +25,8 @@
                     <div class="col-12 d-none">
                         <div class="row gx-2">
                             <input type="hidden" name="temp_id" id="temp_id" value="<?= $temp_id ?? '' ?>">
+                            <input type="hidden" id="machine_linear_norm" value="<?= $data['machine']['linear_norm'] ?? 0 ?>">
+                            <input type="hidden" id="machine_release_date" value="<?= $data['machine']['release_date'] ?? '' ?>">
                             <div class="form-floating col-3 my-2">
                                 <input type="number"
                                        readonly
@@ -64,11 +66,6 @@
                                     месяц
                                 </label>
                             </div>
-                            <div class="form-floating col-3 my-2">
-                                <div id="military-norms-data"
-                                     data-norms='<?= json_encode($data['MilitaryNorm'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>'>
-                                </div>
-                            </div>
                         </div>
                     </div>
                     <div class="col-12">
@@ -81,7 +78,8 @@
                                            id="data_ticket"
                                            name="data_ticket"
                                            value="<?= date("{$data['year']}-{$data['month']}-d") ?>"
-                                           placeholder="Дата">
+                                           placeholder="Дата"
+                                           onchange="updateCalcNormals()">
                                     <label for="data_ticket">Дата</label>
                                 </div>
                                 <div class="form-floating col-6">
@@ -145,31 +143,25 @@
                                         Кол-во дней
                                     </label>
                                 </div>
-                                <div class="form-floating col-2">
-                                    <select class="form-select"
-                                            onchange="loadNorms()"
-                                            required
-                                            id="m_norm"
-                                            name="m_norm"
-                                            placeholder="Выбор нормы">
-                                        <?php
-                                        if ($data['MilitaryNorm']) {
-                                            foreach ($data['MilitaryNorm'] as $key => $dataNorm) {
-                                                ?>
-                                                <option value="<?= $dataNorm['id'] ?>">
-                                                    <?= $dataNorm['name'] ?>
-                                                </option>
-                                                <?php
-                                            }
-                                        } ?>
-                                    </select>
-                                    <label for="m_norm">
-                                        Выбор нормы
-                                        <span class="badge bg-info bg-opacity-10 text-info ms-1" data-bs-toggle="tooltip"
-                                              title="Выбор нормы влияет на все расчеты">
-                                        <i class="bi bi-calculator-fill"></i> расчет
-                                    </span>
-                                    </label>
+                                <div class="col-3 d-flex align-items-center">
+                                    <div class="form-check form-switch me-3">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               id="is_winter"
+                                               name="is_winter"
+                                               value="1"
+                                               onchange="updateCalcNormals()">
+                                        <label class="form-check-label" for="is_winter">
+                                            <i class="bi bi-snow2"></i> Зима
+                                            <span class="badge bg-info bg-opacity-10 text-info ms-1" data-bs-toggle="tooltip"
+                                                  title="Зимний коэффициент +10%">
+                                                <i class="bi bi-calculator-fill"></i> +10%
+                                            </span>
+                                        </label>
+                                    </div>
+                                    <div id="age_indicator" class="small text-warning fw-bold d-none">
+                                        <i class="bi bi-exclamation-triangle-fill"></i> Старше 10 лет: +8%
+                                    </div>
                                 </div>
                             </div>
                             <div class="row gx-2 my-2 py-2 px-1 alert alert-warning">
@@ -243,6 +235,23 @@
                                 </div>
                                 <div class="form-floating col-2">
                                     <input type="number"
+                                           oninput="updateTicketKilometres()"
+                                           min="0"
+                                           class="form-control"
+                                           id="kilometres_city_minsk"
+                                           name="kilometres_city_minsk"
+                                           placeholder="город Минск"
+                                    >
+                                    <label for="kilometres_city_minsk">
+                                        город Минск
+                                        <span class="badge bg-warning bg-opacity-10 text-warning ms-1" data-bs-toggle="tooltip"
+                                              title="Участвует в расчете общего пробега">
+                                        <i class="bi bi-calculator-fill"></i>  участвует в расчете
+                                    </span>
+                                    </label>
+                                </div>
+                                <div class="form-floating col-1">
+                                    <input type="number"
                                            min="0"
                                            class="form-control"
                                            id="kilometres_ticket"
@@ -255,7 +264,7 @@
                                     </span></label>
                                     </label>
                                 </div>
-                                <div class="form-floating col-2">
+                                <div class="form-floating col-1">
                                     <input type="number"
                                            oninput="updateSpent()"
                                            min="0"
@@ -362,8 +371,29 @@
                                 <div class="col-2">
                                     <div class="input-group">
                                         <span class="input-group-text"
-                                              id="normal_cargo">
+                                              id="normal_city_minsk">
                                                 0
+                                        </span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_city_minsk"
+                                                   name="calc_normal_city_minsk"
+                                                   placeholder="город Минск">
+                                            <label for="calc_normal_city_minsk">
+                                                город Минск
+                                                <span class="badge bg-success bg-opacity-10 text-success">авто</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <div class="input-group">
+                                        <span class="input-group-text"
+                                              id="normal_cargo">
+                                                1.0
                                         </span>
                                         <div class="form-floating">
                                             <input type="number"
@@ -380,11 +410,11 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-2">
+                                <div class="col-1">
                                     <div class="input-group">
                                            <span class="input-group-text"
                                                  id="normal_pump">
-                                                0
+                                                11.5
                                         </span>
                                         <div class="form-floating">
                                             <input type="number"
@@ -1058,8 +1088,7 @@
     let deleteButterId = null;
 
     document.addEventListener('DOMContentLoaded', function () {
-        loadNorms(<?= json_encode($data['MilitaryNorm']) ?>);
-        document.getElementById('m_norm').addEventListener('change', loadNorms(<?= json_encode($data['MilitaryNorm']) ?>));
+        updateCalcNormals();
 
         // Загружаем существующие заправки
         loadFuelRecords();

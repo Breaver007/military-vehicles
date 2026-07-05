@@ -68,8 +68,10 @@ function updateCalcNormalsCargo() {
         parseFloat(document.getElementById(`weight_${i}`)?.value) || 0
     );
 
-    // Получаем значения норм из span элементов
-    const normalCargo = document.getElementById('normal_cargo')?.textContent || 0;
+    // Фиксированная норма для груза — 1.0
+    const normalCargo = 1.0;
+    const normalCargoSpan = document.getElementById('normal_cargo');
+    if (normalCargoSpan) normalCargoSpan.textContent = normalCargo.toFixed(1);
 
     const sumCargoWeight = (cargo1 * weight1) +
         (cargo2 * weight2) +
@@ -90,8 +92,10 @@ function updateCalcNormalsPump() {
 
     const pumpInput = document.getElementById('pump');
     const pump = parseFloat(pumpInput?.value) || 0;
-    // Получаем значения норм из span элементов
-    const normalPump = document.getElementById('normal_pump')?.textContent || 0;
+    // Фиксированная норма для насоса — 11.5
+    const normalPump = 11.5;
+    const normalPumpSpan = document.getElementById('normal_pump');
+    if (normalPumpSpan) normalPumpSpan.textContent = normalPump.toFixed(1);
 
     const calcNormalPump = Math.round(pump * normalPump);
 
@@ -142,6 +146,7 @@ function updateFuel(){
     const calcNormalTrailField = document.getElementById('calc_normal_trail');
     const calcNormalGroundField = document.getElementById('calc_normal_ground');
     const calcNormalLinearField = document.getElementById('calc_normal_linear');
+    const calcNormalCityMinskField = document.getElementById('calc_normal_city_minsk');
     const calcNormalCargoField = document.getElementById('calc_normal_cargo');
     const calcNormalPumpField = document.getElementById('calc_normal_pump');
     const normalFuelField = document.getElementById('normal_fuel');
@@ -150,10 +155,11 @@ function updateFuel(){
     const calcNormalTrail = parseFloat(calcNormalTrailField?.value) || 0;
     const calcNormalGround = parseFloat(calcNormalGroundField?.value) || 0;
     const calcNormalLinear = parseFloat(calcNormalLinearField?.value) || 0;
+    const calcNormalCityMinsk = parseFloat(calcNormalCityMinskField?.value) || 0;
     const calcNormalCargo = parseFloat(calcNormalCargoField?.value) || 0;
     const calcNormalPump = parseFloat(calcNormalPumpField?.value) || 0;
 
-    const total = calcNormalCity + calcNormalTrail + calcNormalGround + calcNormalLinear + calcNormalCargo + calcNormalPump;
+    const total = calcNormalCity + calcNormalTrail + calcNormalGround + calcNormalLinear + calcNormalCityMinsk + calcNormalCargo + calcNormalPump;
 
     if (normalFuelField) normalFuelField.value = total;
 
@@ -164,14 +170,16 @@ function updateTicketKilometres() {
     const trailInput = document.getElementById('kilometres_trail');
     const groundInput = document.getElementById('kilometres_ground');
     const linearInput = document.getElementById('kilometres_linear');
+    const cityMinskInput = document.getElementById('kilometres_city_minsk');
     const ticketInput = document.getElementById('kilometres_ticket');
 
     const city = parseFloat(cityInput?.value) || 0;
     const trail = parseFloat(trailInput?.value) || 0;
     const linear = parseFloat(linearInput?.value) || 0;
     const ground = parseFloat(groundInput?.value) || 0;
+    const cityMinsk = parseFloat(cityMinskInput?.value) || 0;
 
-    const total = city + trail + ground + linear;
+    const total = city + trail + ground + linear + cityMinsk;
     if (ticketInput) ticketInput.value = total;
 
     // Обновляем расчетные поля норм
@@ -258,36 +266,102 @@ function updateSpentButter(){
     const takenTransferred = parseFloat(document.getElementById('taken_transferred_b')?.value) || 0;
     document.getElementById('spent_butter').value =  takenTransferred
 }
-function loadNorms(){
-    const normId = document.getElementById('m_norm').value;
-    if (!normId) {
-        return;
-    }
-    const normsData = initMilitaryTicketForm()
-    const selectedNorm = normsData.find(norm => norm.id == normId);
+const COEFFS = {
+    city: 0.10,
+    trail: -0.05,
+    ground: 0.20,
+    linear: 0,
+    city_minsk: 0.15,
+    winter: 0.10,
+    old: 0.08
+};
 
-    if (selectedNorm) {
-        document.getElementById('normal_city').textContent = selectedNorm.city || '0';
-        document.getElementById('normal_trail').textContent = selectedNorm.trail || '0';
-        document.getElementById('normal_ground').textContent = selectedNorm.ground || '0';
-        document.getElementById('normal_linear').textContent = selectedNorm.linear || '0';
-        document.getElementById('normal_cargo').textContent = selectedNorm.cargo || '0';
-        document.getElementById('normal_pump').textContent = selectedNorm.pump|| '0';
+const WINTER_OLD_TYPES = ['city', 'trail', 'ground', 'linear', 'city_minsk'];
+
+function isMachineOlderThan10Years(releaseDate, ticketDate) {
+    if (!releaseDate) return false;
+    const release = new Date(releaseDate);
+    const ticket = ticketDate ? new Date(ticketDate) : new Date();
+    const ageInYears = (ticket - release) / (365.25 * 24 * 60 * 60 * 1000);
+    return ageInYears > 10;
+}
+
+function updateAgeIndicator() {
+    const releaseDateEl = document.getElementById('machine_release_date');
+    const ticketDateEl = document.getElementById('data_ticket');
+    const indicator = document.getElementById('age_indicator');
+
+    if (!indicator) return;
+
+    const isOld = isMachineOlderThan10Years(
+        releaseDateEl?.value,
+        ticketDateEl?.value
+    );
+
+    if (isOld) {
+        indicator.classList.remove('d-none');
+    } else {
+        indicator.classList.add('d-none');
     }
-    // Обновляем расчетные поля норм
+}
+
+function loadNorms() {
     updateCalcNormals();
 }
-function initMilitaryTicketForm() {
-    let normsData = [];
-    const normsElement = document.getElementById('military-norms-data');
-    if (normsElement && normsElement.dataset.norms) {
-        try {
-            normsData = JSON.parse(normsElement.dataset.norms);
-        } catch (e) {
-            console.error('Ошибка парсинга данных норм:', e);
+
+function updateCalcNormals() {
+    const linearNormEl = document.getElementById('machine_linear_norm');
+    const releaseDateEl = document.getElementById('machine_release_date');
+    const ticketDateEl = document.getElementById('data_ticket');
+    const isWinterEl = document.getElementById('is_winter');
+
+    const linearNorm = parseFloat(linearNormEl?.value) || 0;
+    const isWinter = isWinterEl?.checked || false;
+    const isOld = isMachineOlderThan10Years(
+        releaseDateEl?.value,
+        ticketDateEl?.value
+    );
+
+    const roads = ['city', 'trail', 'ground', 'linear'];
+
+    roads.forEach(function(type) {
+        const kmEl = document.getElementById('kilometres_' + type);
+        const normalSpan = document.getElementById('normal_' + type);
+        const calcInput = document.getElementById('calc_normal_' + type);
+
+        const km = parseFloat(kmEl?.value) || 0;
+        let coeff = COEFFS[type] || 0;
+
+        if (WINTER_OLD_TYPES.includes(type)) {
+            if (isWinter) coeff += COEFFS.winter;
+            if (isOld) coeff += COEFFS.old;
         }
-    }
-    return normsData;
+
+        const norm = linearNorm * (1 + coeff);
+        const calc = Math.round(km * norm / 100);
+
+        if (normalSpan) normalSpan.textContent = norm.toFixed(2);
+        if (calcInput) calcInput.value = calc;
+    });
+
+    // Город Минск
+    const kmMinskEl = document.getElementById('kilometres_city_minsk');
+    const normalMinskSpan = document.getElementById('normal_city_minsk');
+    const calcMinskInput = document.getElementById('calc_normal_city_minsk');
+
+    const kmMinsk = parseFloat(kmMinskEl?.value) || 0;
+    let coeffMinsk = COEFFS.city_minsk;
+    if (isWinter) coeffMinsk += COEFFS.winter;
+    if (isOld) coeffMinsk += COEFFS.old;
+
+    const normMinsk = linearNorm * (1 + coeffMinsk);
+    const calcMinsk = Math.round(kmMinsk * normMinsk / 100);
+
+    if (normalMinskSpan) normalMinskSpan.textContent = normMinsk.toFixed(2);
+    if (calcMinskInput) calcMinskInput.value = calcMinsk;
+
+    updateAgeIndicator();
+    updateFuel();
 }
 function updateTicketKilometresWork(){
     const kilometresStartInput = document.getElementById('kilometres_speedometer_start');
