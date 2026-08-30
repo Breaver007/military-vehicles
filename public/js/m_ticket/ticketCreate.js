@@ -418,7 +418,7 @@ async function updateTakenFuel(){
 }
 ///////////////////////////////////////////////////////////////////////
 
-function openUrl(idModelMachine, monthParam, yearParam) {
+function openUrl(idModelMachine, monthParam, yearParam, startPeriod, endPeriod) {
     const prevBtn = document.getElementById('prevMonth');
     const nextBtn = document.getElementById('nextMonth');
     const monthElement = document.getElementById('currentMonthYear');
@@ -434,16 +434,28 @@ function openUrl(idModelMachine, monthParam, yearParam) {
     if (monthParam && monthParam !== '') {
         let monthNumber = parseInt(monthParam);
         if (!isNaN(monthNumber) && monthNumber >= 1 && monthNumber <= 12) {
+            currentDate.setDate(1);
             currentDate.setMonth(monthNumber - 1);
         }
     }
 
+    function getPeriodDates(year, month) {
+        let startDate = new Date(year, month, 21);
+        let endMonth = month + 1;
+        let endYear = year;
+        if (endMonth > 11) {
+            endMonth = 0;
+            endYear++;
+        }
+        let endDate = new Date(endYear, endMonth, 20);
+        return { start: startDate, end: endDate };
+    }
 
     function navigateToMonth(offset) {
+        currentDate.setDate(1);
         currentDate.setMonth(currentDate.getMonth() + offset);
         let monthForUrl = currentDate.getMonth() + 1;
         let yearForUrl = currentDate.getFullYear();
-
         window.location.href = `/military-ticket/${idModelMachine}/${monthForUrl}/${yearForUrl}`;
     }
 
@@ -457,14 +469,24 @@ function openUrl(idModelMachine, monthParam, yearParam) {
         navigateToMonth(1);
     });
 
+    function formatDate(d) {
+        let day = String(d.getDate()).padStart(2, '0');
+        let month = String(d.getMonth() + 1).padStart(2, '0');
+        let year = d.getFullYear();
+        return `${day}.${month}.${year}`;
+    }
+
     function renderCalendar() {
-        const year = currentDate.getFullYear();
-        const month = currentDate.getMonth();
-
-        const monthNames = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-            'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
-
-        monthElement.textContent = `${monthNames[month]} ${year}`;
+        let period;
+        if (startPeriod && endPeriod) {
+            period = {
+                start: new Date(startPeriod),
+                end: new Date(endPeriod)
+            };
+        } else {
+            period = getPeriodDates(currentDate.getFullYear(), currentDate.getMonth());
+        }
+        monthElement.textContent = `Период: ${formatDate(period.start)} — ${formatDate(period.end)}`;
     }
 
     renderCalendar();

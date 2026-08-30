@@ -358,14 +358,27 @@ class MilitaryTicketController extends Controller
     public function showMonth(int $id, int $month, int $year): void
     {
         $formattedMonth = sprintf("%02d", $month);
+        $startPeriod = "$year-$formattedMonth-21";
+
+        $nextMonth = $month + 1;
+        $nextYear = $year;
+        if ($nextMonth > 12) {
+            $nextMonth = 1;
+            $nextYear++;
+        }
+        $endPeriod = sprintf("%04d-%02d-20", $nextYear, $nextMonth);
+
         $data = [
             'title' => 'Эксплуатационная карточка',
             'id' => $id,
             'month' => $month,
             'year' => $year,
+            'startPeriod' => $startPeriod,
+            'endPeriod' => $endPeriod,
             'getModelMachineTicket' => $this->ticketModel->query()
                 ->where('m_model_machine', '=', $id)
-                ->whereLeft('data_ticket', 7, "$year-$formattedMonth")
+                ->where('data_ticket', '>=', $startPeriod)
+                ->where('data_ticket', '<=', $endPeriod)
                 ->orderBy('data_ticket')
                 ->get()
             ,

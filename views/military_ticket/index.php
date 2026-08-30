@@ -101,7 +101,7 @@ $months = [
                                     <i class="bi bi-chevron-left"></i>
                                 </button>
                                 <div id="currentMonthYear"
-                                     class="text-light text-center fw-bold w-25">
+                                     class="text-light text-center fw-bold w-auto mx-2">
                                 </div>
                                 <button class="btn btn-light btn-sm"
                                         id="nextMonth"
@@ -142,10 +142,6 @@ $months = [
                 <div class="text-center py-1">
                     Путевой лист № <?= isset($data['id']) ? $data['id'] : "_____" ?>
                 </div>
-                <div class="text-center py-1">
-                    <?= isset($data['month']) ? $months[$data['month']] : $months[date('n')]; ?>
-                    <?= isset($data['year']) ? $data['year'] : date('Y'); ?>
-                </div>
                 <div class="row row-cols-2 py-1">
                     <div><?= $data['MilitaryUnit'][0]['name'] ?></div>
                     <div class="text-end">
@@ -153,7 +149,6 @@ $months = [
                     </div>
                 </div>
                 <div class="row row-cols-3">
-<!--                    --><?// dd($data)?>
                     <div><?= isset($data['MilitaryModelMachine'][$data['id']]) ? $data['MilitaryModelMachine'][$data['id']]['name'] : "" ?>
                     </div>
                     <div class="text-center fw-bold">
@@ -359,10 +354,11 @@ $months = [
 </div>
 <script>
     document.addEventListener('DOMContentLoaded', function () {
-        // Безопасное получение данных из PHP
         let idModelMachine = "<?= htmlspecialchars($data['id'] ?? '') ?>";
         let monthParam = "<?= isset($data['month']) ? htmlspecialchars($data['month']) : date('m') ?>";
         let yearParam = <?= isset($data['year']) ? (int)$data['year'] : date('Y') ?>;
-        openUrl(idModelMachine, monthParam, yearParam);
+        let startPeriod = "<?= htmlspecialchars($data['startPeriod'] ?? '') ?>";
+        let endPeriod = "<?= htmlspecialchars($data['endPeriod'] ?? '') ?>";
+        openUrl(idModelMachine, monthParam, yearParam, startPeriod, endPeriod);
     });
 </script>

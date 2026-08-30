@@ -3,7 +3,7 @@
         'name' => 'military-vehicles/app',
         'pretty_version' => 'dev-main',
         'version' => 'dev-main',
-        'reference' => 'c4ff006a9b5222f8112f3c2437c12629a9603613',
+        'reference' => '78a93de7776e7c4cd5be401ee5e6759d1ec3341c',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -58,7 +58,7 @@
         'military-vehicles/app' => array(
             'pretty_version' => 'dev-main',
             'version' => 'dev-main',
-            'reference' => 'c4ff006a9b5222f8112f3c2437c12629a9603613',
+            'reference' => '78a93de7776e7c4cd5be401ee5e6759d1ec3341c',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
