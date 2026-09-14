@@ -97,7 +97,7 @@
                         <fieldset>
                             <legend>Предварительные данные</legend>
                             <div class="row gx-2">
-                                <div class="form-floating col-4">
+                                <div class="form-floating col-3">
                                     <input type="number"
                                            required
                                            oninput="updateTicketKilometresWork()"
@@ -111,7 +111,7 @@
                                         Спидометр на начало дня
                                     </label>
                                 </div>
-                                <div class="form-floating col-4">
+                                <div class="form-floating col-3">
                                     <input type="number"
                                            required
                                            oninput="updateTicketKilometresWork()"
@@ -135,6 +135,17 @@
                                         Кол-во дней
                                     </label>
                                 </div>
+                                <div class="form-floating col-4">
+                                    <input type="text"
+                                           value="<?= $data['maxOpeningBalanceFuel'] ?>"
+                                           class="form-control"
+                                           id="opening_balance_fuel"
+                                           name="opening_balance_fuel"
+                                           placeholder="Тонн">
+                                    <label for="opening_balance_fuel">
+                                        Остаток на начало периода горючего
+                                    </label>
+                                </div>
                                 <div class="col-3 d-flex align-items-center">
                                     <div class="form-check form-switch me-3">
                                         <input class="form-check-input"
@@ -153,8 +164,20 @@
                                 </div>
                             </div>
                             <fieldset>
-                                <legend>Данные по километрам и нормам</legend>
-                                <div class="row gx-2 my-2 py-2 px-1">
+                                <legend>Пройдено километров</legend>
+                                <div class="row g-2 my-1 px-1">
+                                    <div class="form-floating col-2">
+                                        <input type="number"
+                                               oninput="updateTicketKilometres()"
+                                               min="0"
+                                               class="form-control"
+                                               id="kilometres_linear"
+                                               name="kilometres_linear"
+                                               placeholder="линейная">
+                                        <label for="kilometres_linear">
+                                            линейная
+                                        </label>
+                                    </div>
                                     <div class="form-floating col-2">
                                         <input type="number"
                                                oninput="updateTicketKilometres()"
@@ -196,28 +219,14 @@
                                                oninput="updateTicketKilometres()"
                                                min="0"
                                                class="form-control"
-                                               id="kilometres_linear"
-                                               name="kilometres_linear"
-                                               placeholder="линейная"
-                                    >
-                                        <label for="kilometres_linear">
-                                            линейная
-                                        </label>
-                                    </div>
-                                    <div class="form-floating col-2">
-                                        <input type="number"
-                                               oninput="updateTicketKilometres()"
-                                               min="0"
-                                               class="form-control"
                                                id="kilometres_city_minsk"
                                                name="kilometres_city_minsk"
-                                               placeholder="город Минск"
-                                    >
+                                               placeholder="город Минск">
                                         <label for="kilometres_city_minsk">
                                             город Минск
                                         </label>
                                     </div>
-                                    <div class="form-floating col-1">
+                                    <div class="form-floating col-3">
                                         <input type="number"
                                                min="0"
                                                class="form-control"
@@ -229,164 +238,7 @@
                                             км по путевке
                                         </label>
                                     </div>
-                                    <div class="form-floating col-1">
-                                        <input type="number"
-                                               oninput="updateSpent()"
-                                               min="0"
-                                               class="form-control"
-                                               id="ticket_write_off"
-                                               name="ticket_write_off"
-                                               placeholder="К списанию"
-                                    >
-                                        <label for="ticket_write_off">
-                                            К списанию
-                                        </label>
-                                    </div>
-                                </div>
-                                <div class="row gx-2 my-2 py-2 px-1">
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                            <span class="input-group-text"
-                                                  id="normal_city">
-                                                    0
-                                            </span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_city"
-                                                       name="calc_normal_city"
-                                                       placeholder="город">
-                                                <label for="calc_normal_city">
-                                                    город
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                              <span class="input-group-text"
-                                                    id="normal_trail">
-                                                    0
-                                            </span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_trail"
-                                                       name="calc_normal_trail"
-                                                       placeholder="трасса">
-                                                <label for="calc_normal_trail">
-                                                    трасса
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                              <span class="input-group-text"
-                                                    id="normal_ground">
-                                                    0
-                                            </span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_ground"
-                                                       name="calc_normal_ground"
-                                                       placeholder="грунт">
-                                                <label for="calc_normal_ground">
-                                                    грунт
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                            <span class="input-group-text"
-                                                  id="normal_linear">
-                                                    0
-                                            </span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_linear"
-                                                       name="calc_normal_linear"
-                                                       placeholder="линейная">
-                                                <label for="calc_normal_linear">
-                                                    линейная
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                            <span class="input-group-text"
-                                                  id="normal_city_minsk">
-                                                    0
-                                            </span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_city_minsk"
-                                                       name="calc_normal_city_minsk"
-                                                       placeholder="город Минск">
-                                                <label for="calc_normal_city_minsk">
-                                                    город Минск
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-1">
-                                        <div class="input-group">
-                                            <span class="input-group-text"
-                                                  id="normal_cargo">
-                                                    1.0
-                                            </span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_cargo"
-                                                       name="calc_normal_cargo"
-                                                       placeholder="груз">
-                                                <label for="calc_normal_cargo">
-                                                    груз
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-1">
-                                        <div class="input-group">
-                                               <span class="input-group-text"
-                                                     id="normal_pump">
-                                                    11.5
-                                            </span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_pump"
-                                                       name="calc_normal_pump"
-                                                       placeholder="насос">
-                                                <label for="calc_normal_pump">
-                                                    насос
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row gx-2 mt-2">
-                                    <div class="form-floating col-2">
+                                    <div class="form-floating col-3">
                                         <input type="text"
                                                class="form-control"
                                                id="spent_fuel"
@@ -394,85 +246,52 @@
                                                placeholder="Тонн">
                                         <label for="spent_fuel">Израсходовано горючего</label>
                                     </div>
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="normal_fuel"
-                                               name="normal_fuel"
-                                               placeholder="Тонн">
-                                        <label for="normal_fuel">Положено по норме</label>
-                                    </div>
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="closing_balance_fuel"
-                                               name="closing_balance_fuel"
-                                               placeholder="Тонн">
-                                        <label for="closing_balance_fuel">Остаток на конец</label>
-                                    </div>
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="saving_fuel"
-                                               name="saving_fuel"
-                                               placeholder="Тонн">
-                                        <label for="saving_fuel">Экономия</label>
-                                    </div>
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="excessive_fuel"
-                                               name="excessive_fuel"
-                                               placeholder="Тонн">
-                                        <label for="excessive_fuel">Перерасход</label>
-                                    </div>
                                 </div>
-                                <div id="alert_check_ticket_writes_Match"></div>
                             </fieldset>
                             <fieldset>
-                                <legend>Данные по грузу</legend>
+                                <legend>Пройдено километров с грузом</legend>
                                 <div class="row gx-2 my-2 py-2 px-1">
                                     <?php
-                                    $cargos = [1, 2, 3, 4, 5];
-                                    foreach ($cargos as $index) {
-                                        ?>
-                                        <div class="form-floating col-2">
-                                            <input type="number"
-                                                   oninput="updateCargo()"
-                                                   min="0"
-                                                   class="form-control"
-                                                   id="cargo_<?= $index ?>"
-                                                   name="cargo_<?= $index ?>"
-                                                   placeholder="Груз <?= $index ?>">
-                                            <label for="cargo_<?= $index ?>">
-                                                Груз <?= $index ?>
-                                            </label>
-                                        </div>
-                                        <?php
-                                    } ?>
+                                        $cargos = [1, 2, 3, 4, 5];
+                                        foreach ($cargos as $index) {
+                                            ?>
+                                            <div class="form-floating col-2">
+                                                <input type="number"
+                                                       oninput="updateCargo()"
+                                                       min="0"
+                                                       class="form-control"
+                                                       id="cargo_<?= $index ?>"
+                                                       name="cargo_<?= $index ?>"
+                                                       placeholder="Груз <?= $index ?>">
+                                                <label for="cargo_<?= $index ?>">
+                                                    Груз <?= $index ?>
+                                                </label>
+                                            </div>
+                                            <?php
+                                        } ?>
                                 </div>
                             </fieldset>
                             <fieldset>
                                 <legend>Данные по весу</legend>
                                 <div class="row gx-2 my-2 py-2 px-1">
                                     <?php
-                                    foreach ($cargos as $index) {
-                                        ?>
-                                        <div class="form-floating col-2">
-                                            <input type="number"
-                                                   oninput="updateWeight()"
-                                                   min="0"
-                                                   step="0.001"
-                                                   class="form-control"
-                                                   id="weight_<?= $index ?>"
-                                                   name="weight_<?= $index ?>"
-                                                   placeholder="Вес <?= $index ?>">
-                                            <label for="weight_<?= $index ?>">
-                                                Вес <?= $index ?>
-                                            </label>
-                                        </div>
-                                        <?php
-                                    } ?>
+                                        foreach ($cargos as $index) {
+                                            ?>
+                                            <div class="form-floating col-2">
+                                                <input type="number"
+                                                       oninput="updateWeight()"
+                                                       min="0"
+                                                       step="0.001"
+                                                       class="form-control"
+                                                       id="weight_<?= $index ?>"
+                                                       name="weight_<?= $index ?>"
+                                                       placeholder="Вес <?= $index ?>">
+                                                <label for="weight_<?= $index ?>">
+                                                    Вес <?= $index ?>
+                                                </label>
+                                            </div>
+                                            <?php
+                                        } ?>
                                 </div>
                             </fieldset>
                             <fieldset>
@@ -491,6 +310,253 @@
                                     </div>
                                 </div>
                             </fieldset>
+                            <fieldset>
+                                <legend>Пройдено километров (отработано моточасов)</legend>
+                                <div class="row gx-2">
+                                    <div class="form-floating col-4">
+                                        <input type="number"
+                                               oninput="updateCargoNo()"
+                                               min="0"
+                                               class="form-control"
+                                               id="cargo"
+                                               name="cargo"
+                                               placeholder="С грузом">
+                                        <label for="cargo">
+                                            С грузом
+                                        </label>
+                                    </div>
+                                    <div class="form-floating col-4">
+                                        <input type="number"
+                                               min="0"
+                                               class="form-control"
+                                               id="cargo-no"
+                                               name="cargo_no"
+                                               placeholder="Без груза"
+                                        >
+                                        <label for="cargo-no">
+                                            Без груза
+                                        </label>
+                                    </div>
+                                    <div class="form-floating col-4">
+                                        <input type="number"
+                                               oninput="updateCargoNo()"
+                                               min="0"
+                                               class="form-control"
+                                               id="kilometres_speedometer"
+                                               name="kilometres_speedometer"
+                                               placeholder="Всего">
+                                        <label for="kilometres_speedometer">Всего
+                                        </label>
+                                    </div>
+                                </div>
+                                <div id="alert_check_kilometres_warning_Match"></div>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Выполненная работа</legend>
+                                <div class="row gx-2">
+                                    <div class="form-floating col-6">
+                                        <input type="text"
+                                               oninput="updateCompletedWork()"
+                                               class="form-control"
+                                               id="completed_work"
+                                               name="completed_work"
+                                               placeholder="Тонн">
+                                        <label for="completed_work">
+                                            Тонн
+                                        </label>
+                                    </div>
+                                    <div class="form-floating col-6">
+                                        <input type="number"
+                                               min="0"
+                                               class="form-control"
+                                               id="completed_work_km"
+                                               name="completed_work_km"
+                                               placeholder="Тонна-километров"
+                                        >
+                                        <label for="completed_work_km">
+                                            Тонна-километров
+                                        </label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <div class="row gx-2 my-2 py-2 px-1">
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text"
+                                              id="normal_linear">
+                                                0
+                                        </span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_linear"
+                                                   name="calc_normal_linear"
+                                                   placeholder="линейная">
+                                            <label for="calc_normal_linear">
+                                                линейная
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text"
+                                              id="normal_city">
+                                                0
+                                        </span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_city"
+                                                   name="calc_normal_city"
+                                                   placeholder="город">
+                                            <label for="calc_normal_city">
+                                                город
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                          <span class="input-group-text"
+                                                id="normal_trail">
+                                                0
+                                        </span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_trail"
+                                                   name="calc_normal_trail"
+                                                   placeholder="трасса">
+                                            <label for="calc_normal_trail">
+                                                трасса
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                          <span class="input-group-text"
+                                                id="normal_ground">
+                                                0
+                                        </span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_ground"
+                                                   name="calc_normal_ground"
+                                                   placeholder="грунт">
+                                            <label for="calc_normal_ground">
+                                                грунт
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text"
+                                              id="normal_city_minsk">
+                                                0
+                                        </span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_city_minsk"
+                                                   name="calc_normal_city_minsk"
+                                                   placeholder="город Минск">
+                                            <label for="calc_normal_city_minsk">
+                                                город Минск
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <div class="input-group">
+                                        <span class="input-group-text"
+                                              id="normal_cargo">
+                                                1.0
+                                        </span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_cargo"
+                                                   name="calc_normal_cargo"
+                                                   placeholder="груз">
+                                            <label for="calc_normal_cargo">
+                                                груз
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <div class="input-group">
+                                           <span class="input-group-text"
+                                                 id="normal_pump">
+                                                11.5
+                                        </span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_pump"
+                                                   name="calc_normal_pump"
+                                                   placeholder="насос">
+                                            <label for="calc_normal_pump">
+                                                насос
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row gx-2 mt-2">
+
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="normal_fuel"
+                                           name="normal_fuel"
+                                           placeholder="Тонн">
+                                    <label for="normal_fuel">Положено по норме</label>
+                                </div>
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="closing_balance_fuel"
+                                           name="closing_balance_fuel"
+                                           placeholder="Тонн">
+                                    <label for="closing_balance_fuel">Остаток на конец</label>
+                                </div>
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="saving_fuel"
+                                           name="saving_fuel"
+                                           placeholder="Тонн">
+                                    <label for="saving_fuel">Экономия</label>
+                                </div>
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="excessive_fuel"
+                                           name="excessive_fuel"
+                                           placeholder="Тонн">
+                                    <label for="excessive_fuel">Перерасход</label>
+                                </div>
+                            </div>
+                            <div id="alert_check_ticket_writes_Match"></div>
                             <fieldset>
                                 <legend>Получено горючего</legend>
                                 <div class="row gx-2 my-2 py-2 px-1">
@@ -595,96 +661,8 @@
                 <div class="row">
                     <div class="col-12">
                         <fieldset>
-                            <legend>Пройдено километров (отработано моточасов)</legend>
-                            <div class="row gx-2">
-                                <div class="form-floating col-4">
-                                    <input type="number"
-                                           oninput="updateCargoNo()"
-                                           min="0"
-                                           class="form-control"
-                                           id="cargo"
-                                           name="cargo"
-                                           placeholder="С грузом">
-                                    <label for="cargo">
-                                        С грузом
-                                    </label>
-                                </div>
-                                <div class="form-floating col-4">
-                                    <input type="number"
-                                           min="0"
-                                           class="form-control"
-                                           id="cargo-no"
-                                           name="cargo_no"
-                                           placeholder="Без груза"
-                                           >
-                                    <label for="cargo-no">
-                                        Без груза
-                                    </label>
-                                </div>
-                                <div class="form-floating col-4">
-                                    <input type="number"
-                                           oninput="updateCargoNo()"
-                                           min="0"
-                                           class="form-control"
-                                           id="kilometres_speedometer"
-                                           name="kilometres_speedometer"
-                                           placeholder="Всего">
-                                    <label for="kilometres_speedometer">Всего
-                                    </label>
-                                </div>
-                            </div>
-                            <div id="alert_check_kilometres_warning_Match"></div>
-                        </fieldset>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <fieldset>
-                            <legend>Выполненная работа</legend>
-                            <div class="row gx-2">
-                                <div class="form-floating col-6">
-                                    <input type="text"
-                                           oninput="updateCompletedWork()"
-                                           class="form-control"
-                                           id="completed_work"
-                                           name="completed_work"
-                                           placeholder="Тонн">
-                                    <label for="completed_work">
-                                        Тонн
-                                    </label>
-                                </div>
-                                <div class="form-floating col-6">
-                                    <input type="number"
-                                           min="0"
-                                           class="form-control"
-                                           id="completed_work_km"
-                                           name="completed_work_km"
-                                           placeholder="Тонна-километров"
-                                           >
-                                    <label for="completed_work_km">
-                                        Тонна-километров
-                                    </label>
-                                </div>
-                            </div>
-                        </fieldset>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <fieldset>
                             <legend>Материальные средства, л</legend>
                             <div class="row gx-2">
-                                <div class="form-floating col-3">
-                                    <input type="text"
-                                           value="<?= $data['maxOpeningBalanceFuel'] ?>"
-                                           class="form-control"
-                                           id="opening_balance_fuel"
-                                           name="opening_balance_fuel"
-                                           placeholder="Тонн">
-                                    <label for="opening_balance_fuel">
-                                        Остаток на начало периода горючего
-                                    </label>
-                                </div>
                                 <div class="form-floating col-3">
                                     <input type="text"
                                            class="form-control"

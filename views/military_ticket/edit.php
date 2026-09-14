@@ -144,8 +144,21 @@
                                 </div>
                             </div>
                             <fieldset>
-                                <legend>Данные по километрам и нормам</legend>
+                                <legend>Пройдено километров</legend>
                                 <div class="row gx-2 my-2 py-2 px-1">
+                                    <div class="form-floating col-2">
+                                        <input type="number"
+                                               oninput="updateTicketKilometres()"
+                                               min="0"
+                                               class="form-control"
+                                               id="kilometres_linear"
+                                               name="kilometres_linear"
+                                               placeholder="линейная"
+                                               value="<?= $_SESSION['old']['kilometres_linear'] ?? $ticket['kilometres_linear'] ?? '' ?>">
+                                        <label for="kilometres_linear">
+                                            линейная
+                                        </label>
+                                    </div>
                                     <div class="form-floating col-2">
                                         <input type="number"
                                                oninput="updateTicketKilometres()"
@@ -185,19 +198,6 @@
                                             грунт
                                         </label>
                                     </div>
-                                    <div class="form-floating col-2">
-                                        <input type="number"
-                                               oninput="updateTicketKilometres()"
-                                               min="0"
-                                               class="form-control"
-                                               id="kilometres_linear"
-                                               name="kilometres_linear"
-                                               placeholder="линейная"
-                                                value="<?= $_SESSION['old']['kilometres_linear'] ?? $ticket['kilometres_linear'] ?? '' ?>">
-                                         <label for="kilometres_linear">
-                                             линейная
-                                         </label>
-                                     </div>
                                      <div class="form-floating col-2">
                                          <input type="number"
                                                 oninput="updateTicketKilometres()"
@@ -238,224 +238,53 @@
                                         </label>
                                     </div>
                                 </div>
-                                <div class="row gx-2 my-2 py-2 px-1">
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                            <span class="input-group-text" id="normal_city">0</span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_city"
-                                                       name="calc_normal_city"
-                                                       placeholder="город"
-                                                       value="<?= $_SESSION['old']['calc_normal_city'] ?? $ticket['calc_normal_city'] ?? '' ?>">
-                                                <label for="calc_normal_city">
-                                                    город
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                            <span class="input-group-text" id="normal_trail">0</span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_trail"
-                                                       name="calc_normal_trail"
-                                                       placeholder="трасса"
-                                                       value="<?= $_SESSION['old']['calc_normal_trail'] ?? $ticket['calc_normal_trail'] ?? '' ?>">
-                                                <label for="calc_normal_trail">
-                                                    трасса
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                            <span class="input-group-text" id="normal_ground">0</span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_ground"
-                                                       name="calc_normal_ground"
-                                                       placeholder="грунт"
-                                                       value="<?= $_SESSION['old']['calc_normal_ground'] ?? $ticket['calc_normal_ground'] ?? '' ?>">
-                                                <label for="calc_normal_ground">
-                                                    грунт
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-2">
-                                        <div class="input-group">
-                                            <span class="input-group-text" id="normal_linear">0</span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_linear"
-                                                       name="calc_normal_linear"
-                                                       placeholder="линейная"
-                                                       value="<?= $_SESSION['old']['calc_normal_linear'] ?? $ticket['calc_normal_linear'] ?? '' ?>">
-                                                 <label for="calc_normal_linear">
-                                                     линейная
-                                                 </label>
-                                             </div>
-                                         </div>
-                                     </div>
-                                     <div class="col-2">
-                                         <div class="input-group">
-                                             <span class="input-group-text" id="normal_city_minsk">0</span>
-                                             <div class="form-floating">
-                                                 <input type="number"
-                                                        readonly
-                                                        min="0"
-                                                        class="form-control"
-                                                        id="calc_normal_city_minsk"
-                                                        name="calc_normal_city_minsk"
-                                                        placeholder="город Минск"
-                                                        value="<?= $_SESSION['old']['calc_normal_city_minsk'] ?? $ticket['calc_normal_city_minsk'] ?? '' ?>">
-                                                 <label for="calc_normal_city_minsk">
-                                                     город Минск
-                                                 </label>
-                                             </div>
-                                         </div>
-                                     </div>
-                                     <div class="col-1">
-                                         <div class="input-group">
-                                             <span class="input-group-text" id="normal_cargo">1.0</span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_cargo"
-                                                       name="calc_normal_cargo"
-                                                       placeholder="груз"
-                                                       value="<?= $_SESSION['old']['calc_normal_cargo'] ?? $ticket['calc_normal_cargo'] ?? '' ?>">
-                                                <label for="calc_normal_cargo">
-                                                    груз
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="col-1">
-                                        <div class="input-group">
-                                            <span class="input-group-text" id="normal_pump">11.5</span>
-                                            <div class="form-floating">
-                                                <input type="number"
-                                                       readonly
-                                                       min="0"
-                                                       class="form-control"
-                                                       id="calc_normal_pump"
-                                                       name="calc_normal_pump"
-                                                       placeholder="насос"
-                                                       value="<?= $_SESSION['old']['calc_normal_pump'] ?? $ticket['calc_normal_pump'] ?? '' ?>">
-                                                <label for="calc_normal_pump">
-                                                    насос
-                                                </label>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row gx-2 mt-2">
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="spent_fuel"
-                                               name="spent_fuel"
-                                               placeholder="Тонн">
-                                        <label for="spent_fuel">Израсходовано горючего</label>
-                                    </div>
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="normal_fuel"
-                                               name="normal_fuel"
-                                               placeholder="Тонн">
-                                        <label for="normal_fuel">Положено по норме</label>
-                                    </div>
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="closing_balance_fuel"
-                                               name="closing_balance_fuel"
-                                               placeholder="Тонн">
-                                        <label for="closing_balance_fuel">Остаток на конец</label>
-                                    </div>
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="saving_fuel"
-                                               name="saving_fuel"
-                                               placeholder="Тонн">
-                                        <label for="saving_fuel">Экономия</label>
-                                    </div>
-                                    <div class="form-floating col-2">
-                                        <input type="text"
-                                               class="form-control"
-                                               id="excessive_fuel"
-                                               name="excessive_fuel"
-                                               placeholder="Тонн">
-                                        <label for="excessive_fuel">Перерасход</label>
-                                    </div>
-                                </div>
-                                <div id="alert_check_ticket_writes_Match"></div>
                             </fieldset>
                             <fieldset>
-                                <legend>Данные по грузу</legend>
+                                <legend>Пройдено километров с грузом</legend>
                                 <div class="row gx-2 my-2 py-2 px-1">
                                     <?php
-                                    $cargos = [1, 2, 3, 4, 5];
-                                    foreach ($cargos as $index) {
-                                        ?>
-                                        <div class="form-floating col-2">
-                                            <input type="number"
-                                                   oninput="updateCargo()"
-                                                   min="0"
-                                                   class="form-control"
-                                                   id="cargo_<?= $index ?>"
-                                                   name="cargo_<?= $index ?>"
-                                                   placeholder="Груз <?= $index ?>"
-                                                   value="<?= $_SESSION['old']["cargo_$index"] ?? $ticket["cargo_$index"] ?? '' ?>">
-                                            <label for="cargo_<?= $index ?>">
-                                                Груз <?= $index ?>
-                                            </label>
-                                        </div>
-                                        <?php
-                                    } ?>
+                                        $cargos = [1, 2, 3, 4, 5];
+                                        foreach ($cargos as $index) {
+                                            ?>
+                                            <div class="form-floating col-2">
+                                                <input type="number"
+                                                       oninput="updateCargo()"
+                                                       min="0"
+                                                       class="form-control"
+                                                       id="cargo_<?= $index ?>"
+                                                       name="cargo_<?= $index ?>"
+                                                       placeholder="Груз <?= $index ?>"
+                                                       value="<?= $_SESSION['old']["cargo_$index"] ?? $ticket["cargo_$index"] ?? '' ?>">
+                                                <label for="cargo_<?= $index ?>">
+                                                    Груз <?= $index ?>
+                                                </label>
+                                            </div>
+                                            <?php
+                                        } ?>
                                 </div>
                             </fieldset>
                             <fieldset>
                                 <legend>Данные по весу</legend>
                                 <div class="row gx-2 my-2 py-2 px-1">
                                     <?php
-                                    foreach ($cargos as $index) {
-                                        ?>
-                                        <div class="form-floating col-2">
-                                            <input type="number"
-                                                   oninput="updateWeight()"
-                                                   min="0"
-                                                   step="0.001"
-                                                   class="form-control"
-                                                   id="weight_<?= $index ?>"
-                                                   name="weight_<?= $index ?>"
-                                                   placeholder="Вес <?= $index ?>"
-                                                   value="<?= $_SESSION['old']["weight_$index"] ?? $ticket["weight_$index"] ?? '' ?>">
-                                            <label for="weight_<?= $index ?>">
-                                                Вес <?= $index ?>
-                                            </label>
-                                        </div>
-                                        <?php
-                                    } ?>
+                                        foreach ($cargos as $index) {
+                                            ?>
+                                            <div class="form-floating col-2">
+                                                <input type="number"
+                                                       oninput="updateWeight()"
+                                                       min="0"
+                                                       step="0.001"
+                                                       class="form-control"
+                                                       id="weight_<?= $index ?>"
+                                                       name="weight_<?= $index ?>"
+                                                       placeholder="Вес <?= $index ?>"
+                                                       value="<?= $_SESSION['old']["weight_$index"] ?? $ticket["weight_$index"] ?? '' ?>">
+                                                <label for="weight_<?= $index ?>">
+                                                    Вес <?= $index ?>
+                                                </label>
+                                            </div>
+                                            <?php
+                                        } ?>
                                 </div>
                             </fieldset>
                             <fieldset>
@@ -475,6 +304,250 @@
                                     </div>
                                 </div>
                             </fieldset>
+                            <fieldset>
+                                <legend>Пройдено километров (отработано моточасов)</legend>
+                                <div class="row gx-2">
+                                    <div class="form-floating col-4">
+                                        <input type="number"
+                                               oninput="updateCargoNo()"
+                                               min="0"
+                                               class="form-control"
+                                               id="cargo"
+                                               name="cargo"
+                                               placeholder="С грузом"
+                                               value="<?= $_SESSION['old']['cargo'] ?? $ticket['cargo'] ?? '' ?>">
+                                        <label for="cargo">
+                                            С грузом
+                                        </label>
+                                    </div>
+                                    <div class="form-floating col-4">
+                                        <input type="number"
+                                               min="0"
+                                               class="form-control"
+                                               id="cargo-no"
+                                               name="cargo_no"
+                                               placeholder="Без груза"
+                                               value="<?= $_SESSION['old']['cargo_no'] ?? $ticket['cargo_no'] ?? '' ?>">
+                                        <label for="cargo-no">
+                                            Без груза
+                                        </label>
+                                    </div>
+                                    <div class="form-floating col-4">
+                                        <input type="number"
+                                               oninput="updateCargoNo()"
+                                               min="0"
+                                               class="form-control"
+                                               id="kilometres_speedometer"
+                                               name="kilometres_speedometer"
+                                               placeholder="Всего"
+                                               value="<?= $_SESSION['old']['kilometres_speedometer'] ?? $ticket['kilometres_speedometer'] ?? '' ?>">
+                                        <label for="kilometres_speedometer">Всего
+                                        </label>
+                                    </div>
+                                </div>
+                                <div id="alert_check_kilometres_warning_Match"></div>
+                            </fieldset>
+                            <fieldset>
+                                <legend>Выполненная работа</legend>
+                                <div class="row gx-2">
+                                    <div class="form-floating col-6">
+                                        <input type="text"
+                                               oninput="updateCompletedWork()"
+                                               class="form-control"
+                                               id="completed_work"
+                                               name="completed_work"
+                                               placeholder="Тонн"
+                                               value="<?= $_SESSION['old']['completed_work'] ?? $ticket['completed_work'] ?? '' ?>">
+                                        <label for="completed_work">
+                                            Тонн
+                                        </label>
+                                    </div>
+                                    <div class="form-floating col-6">
+                                        <input type="number"
+                                               min="0"
+                                               class="form-control"
+                                               id="completed_work_km"
+                                               name="completed_work_km"
+                                               placeholder="Тонна-километров"
+                                               value="<?= $_SESSION['old']['completed_work_km'] ?? $ticket['completed_work_km'] ?? '' ?>">
+                                        <label for="completed_work_km">
+                                            Тонна-километров
+                                        </label>
+                                    </div>
+                                </div>
+                            </fieldset>
+                            <div class="row gx-2 my-2 py-2 px-1">
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="normal_linear">0</span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_linear"
+                                                   name="calc_normal_linear"
+                                                   placeholder="линейная"
+                                                   value="<?= $_SESSION['old']['calc_normal_linear'] ?? $ticket['calc_normal_linear'] ?? '' ?>">
+                                            <label for="calc_normal_linear">
+                                                линейная
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="normal_city">0</span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_city"
+                                                   name="calc_normal_city"
+                                                   placeholder="город"
+                                                   value="<?= $_SESSION['old']['calc_normal_city'] ?? $ticket['calc_normal_city'] ?? '' ?>">
+                                            <label for="calc_normal_city">
+                                                город
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="normal_trail">0</span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_trail"
+                                                   name="calc_normal_trail"
+                                                   placeholder="трасса"
+                                                   value="<?= $_SESSION['old']['calc_normal_trail'] ?? $ticket['calc_normal_trail'] ?? '' ?>">
+                                            <label for="calc_normal_trail">
+                                                трасса
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-2">
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="normal_ground">0</span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_ground"
+                                                   name="calc_normal_ground"
+                                                   placeholder="грунт"
+                                                   value="<?= $_SESSION['old']['calc_normal_ground'] ?? $ticket['calc_normal_ground'] ?? '' ?>">
+                                            <label for="calc_normal_ground">
+                                                грунт
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                 <div class="col-2">
+                                     <div class="input-group">
+                                         <span class="input-group-text" id="normal_city_minsk">0</span>
+                                         <div class="form-floating">
+                                             <input type="number"
+                                                    readonly
+                                                    min="0"
+                                                    class="form-control"
+                                                    id="calc_normal_city_minsk"
+                                                    name="calc_normal_city_minsk"
+                                                    placeholder="город Минск"
+                                                    value="<?= $_SESSION['old']['calc_normal_city_minsk'] ?? $ticket['calc_normal_city_minsk'] ?? '' ?>">
+                                             <label for="calc_normal_city_minsk">
+                                                 город Минск
+                                             </label>
+                                         </div>
+                                     </div>
+                                 </div>
+                                 <div class="col-1">
+                                     <div class="input-group">
+                                         <span class="input-group-text" id="normal_cargo">1.0</span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_cargo"
+                                                   name="calc_normal_cargo"
+                                                   placeholder="груз"
+                                                   value="<?= $_SESSION['old']['calc_normal_cargo'] ?? $ticket['calc_normal_cargo'] ?? '' ?>">
+                                            <label for="calc_normal_cargo">
+                                                груз
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-1">
+                                    <div class="input-group">
+                                        <span class="input-group-text" id="normal_pump">11.5</span>
+                                        <div class="form-floating">
+                                            <input type="number"
+                                                   readonly
+                                                   min="0"
+                                                   class="form-control"
+                                                   id="calc_normal_pump"
+                                                   name="calc_normal_pump"
+                                                   placeholder="насос"
+                                                   value="<?= $_SESSION['old']['calc_normal_pump'] ?? $ticket['calc_normal_pump'] ?? '' ?>">
+                                            <label for="calc_normal_pump">
+                                                насос
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row gx-2 mt-2">
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="spent_fuel"
+                                           name="spent_fuel"
+                                           placeholder="Тонн">
+                                    <label for="spent_fuel">Израсходовано горючего</label>
+                                </div>
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="normal_fuel"
+                                           name="normal_fuel"
+                                           placeholder="Тонн">
+                                    <label for="normal_fuel">Положено по норме</label>
+                                </div>
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="closing_balance_fuel"
+                                           name="closing_balance_fuel"
+                                           placeholder="Тонн">
+                                    <label for="closing_balance_fuel">Остаток на конец</label>
+                                </div>
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="saving_fuel"
+                                           name="saving_fuel"
+                                           placeholder="Тонн">
+                                    <label for="saving_fuel">Экономия</label>
+                                </div>
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           class="form-control"
+                                           id="excessive_fuel"
+                                           name="excessive_fuel"
+                                           placeholder="Тонн">
+                                    <label for="excessive_fuel">Перерасход</label>
+                                </div>
+                            </div>
+                            <div id="alert_check_ticket_writes_Match"></div>
+
                             <fieldset>
                                 <legend>Получено горючего</legend>
                                 <div class="row gx-2 my-2 py-2 px-1">
@@ -584,86 +657,7 @@
                         </fieldset>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="col-12">
-                        <fieldset>
-                            <legend>Пройдено километров (отработано моточасов)</legend>
-                            <div class="row gx-2">
-                                <div class="form-floating col-4">
-                                    <input type="number"
-                                           oninput="updateCargoNo()"
-                                           min="0"
-                                           class="form-control"
-                                           id="cargo"
-                                           name="cargo"
-                                           placeholder="С грузом"
-                                           value="<?= $_SESSION['old']['cargo'] ?? $ticket['cargo'] ?? '' ?>">
-                                    <label for="cargo">
-                                        С грузом
-                                    </label>
-                                </div>
-                                <div class="form-floating col-4">
-                                    <input type="number"
-                                           min="0"
-                                           class="form-control"
-                                           id="cargo-no"
-                                           name="cargo_no"
-                                           placeholder="Без груза"
-                                           value="<?= $_SESSION['old']['cargo_no'] ?? $ticket['cargo_no'] ?? '' ?>">
-                                    <label for="cargo-no">
-                                        Без груза
-                                    </label>
-                                </div>
-                                <div class="form-floating col-4">
-                                    <input type="number"
-                                           oninput="updateCargoNo()"
-                                           min="0"
-                                           class="form-control"
-                                           id="kilometres_speedometer"
-                                           name="kilometres_speedometer"
-                                           placeholder="Всего"
-                                           value="<?= $_SESSION['old']['kilometres_speedometer'] ?? $ticket['kilometres_speedometer'] ?? '' ?>">
-                                    <label for="kilometres_speedometer">Всего
-                                    </label>
-                                </div>
-                            </div>
-                            <div id="alert_check_kilometres_warning_Match"></div>
-                        </fieldset>
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="col-12">
-                        <fieldset>
-                            <legend>Выполненная работа</legend>
-                            <div class="row gx-2">
-                                <div class="form-floating col-6">
-                                    <input type="text"
-                                           oninput="updateCompletedWork()"
-                                           class="form-control"
-                                           id="completed_work"
-                                           name="completed_work"
-                                           placeholder="Тонн"
-                                           value="<?= $_SESSION['old']['completed_work'] ?? $ticket['completed_work'] ?? '' ?>">
-                                    <label for="completed_work">
-                                        Тонн
-                                    </label>
-                                </div>
-                                <div class="form-floating col-6">
-                                    <input type="number"
-                                           min="0"
-                                           class="form-control"
-                                           id="completed_work_km"
-                                           name="completed_work_km"
-                                           placeholder="Тонна-километров"
-                                           value="<?= $_SESSION['old']['completed_work_km'] ?? $ticket['completed_work_km'] ?? '' ?>">
-                                    <label for="completed_work_km">
-                                        Тонна-километров
-                                    </label>
-                                </div>
-                            </div>
-                        </fieldset>
-                    </div>
-                </div>
+
                 <div class="row">
                     <div class="col-12">
                         <fieldset>
