@@ -77,7 +77,9 @@ class MilitaryTicketController extends Controller
     {
         $formattedMonth = sprintf("%02d", $month);
         $MaxKilometres = $this->ticketModel->getMaxKilometres($id);
+        // Остатки на начало периода берём из предыдущей путевки этой техники
         $OpeningBalanceFuel = $this->ticketModel->getOpeningBalanceFuel($id);
+        $OpeningBalanceButter = $this->ticketModel->getOpeningBalanceButter($id);
         $machine = $this->machineModel->findWithRelations($id);
 
         // Генерируем временный ID для сессии
@@ -101,6 +103,7 @@ class MilitaryTicketController extends Controller
             'year' => $year,
             'maxKilometres' => $MaxKilometres,
             'maxOpeningBalanceFuel' => $OpeningBalanceFuel,
+            'maxOpeningBalanceButter' => $OpeningBalanceButter,
             'machine' => $machine,
             'MilitaryButter' => $this->butterModel->where('is_active', '=', 1),
             'MilitaryLocalStock' => $this->localStockModel->where('is_active', '=', 1),
@@ -209,11 +212,35 @@ class MilitaryTicketController extends Controller
         $totalLocal = $tempId && isset($_SESSION['temp_fuels'][$tempId]) ? $this->getTempFuelTotal($tempId) : 0;
         $totalOther = $tempId && isset($_SESSION['temp_fuels_other'][$tempId]) ? $this->getTempFuelOtherTotal($tempId) : 0;
         $totalPlaces = $tempId && isset($_SESSION['temp_fuels_places'][$tempId]) ? $this->getTempFuelPlacesTotal($tempId) : 0;
-        $data['taken_fuel'] = $totalLocal + $totalOther + $totalPlaces;
+        // Получено горючего = заправки из сессии + ручные поля (как в update())
+        $data['taken_fuel'] = $totalLocal + $totalOther + $totalPlaces
+            + (float)($_POST['taken_load_f'] ?? 0)
+            + (float)($_POST['taken_load_other_f'] ?? 0)
+            + (float)($_POST['taken_transferred_f'] ?? 0)
+            + (float)($_POST['taken_other_f'] ?? 0);
 
         // Получаем сумму из временных записей масла
         $totalButter = $tempId && isset($_SESSION['temp_butters'][$tempId]) ? $this->getTempButterTotal($tempId) : 0;
-        $data['taken_butter'] = (float)($_POST['taken_butter'] ?? 0) + $totalButter;
+        // Получено масла = записи из сессии + ручные поля (как в update())
+        $data['taken_butter'] = $totalButter
+            + (float)($_POST['taken_load_b'] ?? 0)
+            + (float)($_POST['taken_load_other_b'] ?? 0)
+            + (float)($_POST['taken_transferred_b'] ?? 0)
+            + (float)($_POST['taken_other_b'] ?? 0);
+
+        // Остаток на конец периода: если не заполнен вручную — считаем
+        $data['closing_balance_fuel'] = $this->resolveClosingBalance(
+            $_POST['closing_balance_fuel'] ?? null,
+            (float)$data['opening_balance_fuel'],
+            (float)$data['taken_fuel'],
+            (float)$data['spent_fuel']
+        );
+        $data['closing_balance_butter'] = $this->resolveClosingBalance(
+            $_POST['closing_balance_butter'] ?? null,
+            (float)$data['opening_balance_butter'],
+            (float)$data['taken_butter'],
+            (float)$data['spent_butter']
+        );
 
         $ticket = $this->ticketModel->create($data);
 
@@ -501,6 +528,26 @@ class MilitaryTicketController extends Controller
             $this->redirect("/military-ticket/edit/{$idModelMachine}/{$month}/{$year}/{$id}");
         }
 
+        // Остатки и получено: суммируем заправки из сессии + ручные поля.
+        // Считаем заранее, чтобы сразу сохранить остаток на конец периода.
+        $tempId = $_POST['temp_id'] ?? null;
+
+        $totalLocal = $tempId ? $this->getTempFuelTotal($tempId) : 0;
+        $totalOther = $tempId ? $this->getTempFuelOtherTotal($tempId) : 0;
+        $totalPlaces = $tempId ? $this->getTempFuelPlacesTotal($tempId) : 0;
+        $totalFuel = $totalLocal + $totalOther + $totalPlaces
+            + (float)($_POST['taken_load_f'] ?? 0)
+            + (float)($_POST['taken_load_other_f'] ?? 0)
+            + (float)($_POST['taken_transferred_f'] ?? 0)
+            + (float)($_POST['taken_other_f'] ?? 0);
+
+        $totalButterTemp = $tempId ? $this->getTempButterTotal($tempId) : 0;
+        $totalButter = $totalButterTemp
+            + (float)($_POST['taken_load_b'] ?? 0)
+            + (float)($_POST['taken_load_other_b'] ?? 0)
+            + (float)($_POST['taken_transferred_b'] ?? 0)
+            + (float)($_POST['taken_other_b'] ?? 0);
+
         $dbData = [
             'm_model_machine' => (int)($_POST['m_model_machine']),
             'kilometres_speedometer_start' => (float)($_POST['kilometres_speedometer_start'] ?? $ticket['kilometres_speedometer_start'] ?? 0),
@@ -523,14 +570,25 @@ class MilitaryTicketController extends Controller
             'completed_work_km' => (float)($_POST['completed_work_km'] ?? $ticket['completed_work_km'] ?? 0),
             'opening_balance_fuel' => (float)($_POST['opening_balance_fuel'] ?? $ticket['opening_balance_fuel'] ?? 0),
             'opening_balance_butter' => (float)($_POST['opening_balance_butter'] ?? $ticket['opening_balance_butter'] ?? 0),
-            'taken_fuel' => 0, // будет обновлено после обработки заправок
-            'taken_butter' => 0, // будет обновлено после обработки записей масла
+            'taken_fuel' => $totalFuel,
+            'taken_butter' => $totalButter,
             'spent_fuel' => (float)($_POST['spent_fuel'] ?? $ticket['spent_fuel'] ?? 0),
             'spent_butter' => (float)($_POST['spent_butter'] ?? $ticket['spent_butter'] ?? 0),
             'normal_fuel' => (float)($_POST['normal_fuel'] ?? $ticket['normal_fuel'] ?? 0),
             'normal_butter' => (float)($_POST['normal_butter'] ?? $ticket['normal_butter'] ?? 0),
-            'closing_balance_fuel' => (float)($_POST['closing_balance_fuel'] ?? $ticket['closing_balance_fuel'] ?? 0),
-            'closing_balance_butter' => (float)($_POST['closing_balance_butter'] ?? $ticket['closing_balance_butter'] ?? 0),
+            // Остаток на конец периода: из формы, иначе считаем (начало + получено - израсходовано)
+            'closing_balance_fuel' => $this->resolveClosingBalance(
+                $_POST['closing_balance_fuel'] ?? null,
+                (float)($_POST['opening_balance_fuel'] ?? $ticket['opening_balance_fuel'] ?? 0),
+                $totalFuel,
+                (float)($_POST['spent_fuel'] ?? $ticket['spent_fuel'] ?? 0)
+            ),
+            'closing_balance_butter' => $this->resolveClosingBalance(
+                $_POST['closing_balance_butter'] ?? null,
+                (float)($_POST['opening_balance_butter'] ?? $ticket['opening_balance_butter'] ?? 0),
+                $totalButter,
+                (float)($_POST['spent_butter'] ?? $ticket['spent_butter'] ?? 0)
+            ),
             'saving_fuel' => (float)($_POST['saving_fuel'] ?? $ticket['saving_fuel'] ?? 0),
             'saving_butter' => (float)($_POST['saving_butter'] ?? $ticket['saving_butter'] ?? 0),
             'excessive_fuel' => (float)($_POST['excessive_fuel'] ?? $ticket['excessive_fuel'] ?? 0),
@@ -550,30 +608,8 @@ class MilitaryTicketController extends Controller
         $result = $this->ticketModel->update($id, $dbData);
 
         if ($result) {
-            // Обновляем заправки
-            $tempId = $_POST['temp_id'] ?? null;
-
+            // Сохраняем новые заправки из сессии
             if ($tempId) {
-                // Обновляем taken_fuel = сумма всех заправок + ручнные поля
-                $totalLocal = $this->getTempFuelTotal($tempId);
-                $totalOther = $this->getTempFuelOtherTotal($tempId);
-                $totalPlaces = $this->getTempFuelPlacesTotal($tempId);
-                $takenLoadF = (float)($_POST['taken_load_f'] ?? 0);
-                $takenLoadOtherF = (float)($_POST['taken_load_other_f'] ?? 0);
-                $takenTransferredF = (float)($_POST['taken_transferred_f'] ?? 0);
-                $takenOtherF = (float)($_POST['taken_other_f'] ?? 0);
-                $totalFuel = $totalLocal + $totalOther + $totalPlaces + $takenLoadF + $takenLoadOtherF + $takenTransferredF + $takenOtherF;
-                $this->ticketModel->update($id, ['taken_fuel' => $totalFuel]);
-
-                // Обновляем taken_butter = сумма временных записей масла + ручные поля
-                $totalButterTemp = $this->getTempButterTotal($tempId);
-                $takenLoadB = (float)($_POST['taken_load_b'] ?? 0);
-                $takenLoadOtherB = (float)($_POST['taken_load_other_b'] ?? 0);
-                $takenTransferredB = (float)($_POST['taken_transferred_b'] ?? 0);
-                $takenOtherB = (float)($_POST['taken_other_b'] ?? 0);
-                $totalButter = $totalButterTemp + $takenLoadB + $takenLoadOtherB + $takenTransferredB + $takenOtherB;
-                $this->ticketModel->update($id, ['taken_butter' => $totalButter]);
-
                 // Добавляем новые заправки из сессии
                 if (!empty($_SESSION['temp_fuels'][$tempId])) {
                     foreach ($_SESSION['temp_fuels'][$tempId] as $fuel) {
@@ -758,6 +794,23 @@ class MilitaryTicketController extends Controller
     {
         $fuels = $_SESSION['temp_fuels'][$tempId] ?? [];
         return array_sum(array_column($fuels, 'value'));
+    }
+
+    /**
+     * Остаток на конец периода.
+     *
+     * Если пользователь заполнил поле вручную — сохраняем его значение,
+     * иначе считаем: остаток на начало + получено - израсходовано.
+     *
+     * @param mixed $posted Значение из формы (null / '' = не заполнено)
+     */
+    private function resolveClosingBalance($posted, float $opening, float $taken, float $spent): float
+    {
+        if ($posted !== null && $posted !== '') {
+            return (float)$posted;
+        }
+
+        return round($opening + $taken - $spent, 2);
     }
 
     /**

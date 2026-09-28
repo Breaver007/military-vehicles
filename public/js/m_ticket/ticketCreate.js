@@ -261,10 +261,50 @@ function updateSpent(){
     const takenTransferred = parseFloat(document.getElementById('taken_transferred_f')?.value) || 0;
     document.getElementById('spent_fuel').value = weighticketWritet + takenTransferred
     checkTicketWritesOffMatch()
+    updateClosingBalances()
 }
 function updateSpentButter(){
     const takenTransferred = parseFloat(document.getElementById('taken_transferred_b')?.value) || 0;
     document.getElementById('spent_butter').value =  takenTransferred
+    updateClosingBalances();
+}
+//////////////////////////////////////////////////////////////////////////
+// Остаток на конец периода = остаток на начало + получено - израсходовано
+
+function roundAmount(value) {
+    return Math.round((value + Number.EPSILON) * 100) / 100;
+}
+
+/**
+ * Пересчитывает остаток на конец периода (горючего и масла).
+ *
+ * Поле остаётся ручным: как только пользователь что-то ввёл в него,
+ * автоматический расчёт прекращается до тех пор, пока поле не очистят.
+ */
+function updateClosingBalances() {
+    ['fuel', 'butter'].forEach(updateClosingBalance);
+}
+
+function updateClosingBalance(kind) {
+    const field = document.getElementById('closing_balance_' + kind);
+    if (!field) return;
+
+    if (!field.dataset.tracked) {
+        field.dataset.tracked = '1';
+        field.addEventListener('input', function () {
+            // Поле очистили — возвращаем автоматический расчёт
+            this.dataset.manual = this.value === '' ? '0' : '1';
+        });
+    }
+
+    // Поле заполнили вручную — не перетираем его
+    if (field.dataset.manual === '1') return;
+
+    const opening = parseFloat(document.getElementById('opening_balance_' + kind)?.value) || 0;
+    const taken = parseFloat(document.getElementById('taken_' + kind)?.value) || 0;
+    const spent = parseFloat(document.getElementById('spent_' + kind)?.value) || 0;
+
+    field.value = roundAmount(opening + taken - spent);
 }
 const COEFFS = {
     city: 0.10,
@@ -415,6 +455,8 @@ async function updateTakenFuel(){
 
     const total = manualTotal + fuelTotal + fuelOtherTotal + fuelPlacesTotal;
     if (takenFuelInput) takenFuelInput.value = total;
+
+    updateClosingBalances();
 }
 ///////////////////////////////////////////////////////////////////////
 
@@ -566,7 +608,7 @@ async function addFuelRecord() {
 
         if (result.success) {
             // Очищаем форму
-            document.getElementById('fuel_date').value = '';
+            setRefuelDate('fuel_date');
             document.getElementById('fuel_type').value = '';
             document.getElementById('fuel_value').value = '';
 
@@ -727,7 +769,7 @@ async function addFuelOtherRecord() {
         const result = await response.json();
 
         if (result.success) {
-            document.getElementById('fuel_other_date').value = '';
+            setRefuelDate('fuel_other_date');
             document.getElementById('fuel_other_type').value = '';
             document.getElementById('fuel_other_value').value = '';
 
@@ -866,7 +908,7 @@ async function addFuelPlacesRecord() {
         const result = await response.json();
 
         if (result.success) {
-            document.getElementById('fuel_places_date').value = '';
+            setRefuelDate('fuel_places_date');
             document.getElementById('fuel_places_type').value = '';
             document.getElementById('fuel_places_value').value = '';
 
@@ -1000,6 +1042,8 @@ async function updateTakenButter(){
 
     const total = manualTotal + butterTotal;
     if (takenButterInput) takenButterInput.value = total;
+
+    updateClosingBalances();
 }
 
 async function addButterRecord() {
@@ -1038,7 +1082,7 @@ async function addButterRecord() {
         const result = await response.json();
 
         if (result.success) {
-            document.getElementById('butter_date').value = '';
+            setRefuelDate('butter_date');
             document.getElementById('butter_type').value = '';
             document.getElementById('butter_value').value = '';
 
@@ -1135,3 +1179,36 @@ function getButterTypeName(id) {
     const option = select.querySelector(`option[value="${id}"]`);
     return option ? option.textContent : 'Неизвестный вид масла';
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Дата заправки по умолчанию = дата путевки (а не текущая дата)
+
+function getTicketDate() {
+    const field = document.getElementById('data_ticket');
+    if (field && field.value) return field.value;
+
+    return new Date().toISOString().slice(0, 10);
+}
+
+function setRefuelDate(inputId) {
+    const input = document.getElementById(inputId);
+    if (input) input.value = getTicketDate();
+}
+
+function initRefuelDates() {
+    [
+        ['fuelModal', 'fuel_date'],
+        ['fuelOtherModal', 'fuel_other_date'],
+        ['fuelPlacesModal', 'fuel_places_date'],
+        ['butterModal', 'butter_date']
+    ].forEach(function (pair) {
+        const modal = document.getElementById(pair[0]);
+        if (!modal) return;
+
+        modal.addEventListener('show.bs.modal', function () {
+            setRefuelDate(pair[1]);
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initRefuelDates);

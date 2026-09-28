@@ -34,30 +34,57 @@ class MilitaryTicket extends Model
         return $result ?: null;
     }
 
+    /**
+     * Получить предыдущую путевку техники — последнюю по дате путевки.
+     *
+     * Используется как источник для остатков на начало периода и
+     * показаний спидометра на начало дня.
+     */
+    public function getPreviousTicket($id): ?array
+    {
+        $stmt = $this->db->prepare(
+            "SELECT * FROM {$this->table}
+             WHERE m_model_machine = :machine
+             ORDER BY data_ticket DESC, id DESC
+             LIMIT 1"
+        );
+        $stmt->execute(['machine' => $id]);
+        $result = $stmt->fetch();
+
+        return $result ?: null;
+    }
+
     public function getMaxKilometres($id): int
     {
-        $result = $this->query()
-            ->where('m_model_machine', '=', $id)
-            ->orderBy('kilometres_speedometer_start', 'DESC')
-            ->limit(1)
-            ->first();
+        $result = $this->getPreviousTicket($id);
         if ($result != null) {
             $total = $result['kilometres_speedometer_start'] + $result['kilometres_speedometer'];
         }
-        return $total ?? 0;
+        return (int)($total ?? 0);
     }
 
-    public function getOpeningBalanceFuel($id): int
+    /**
+     * Остаток горючего на начало периода — из предыдущей путевки
+     */
+    public function getOpeningBalanceFuel($id): float
     {
-        $result = $this->query()
-            ->where('m_model_machine', '=', $id)
-            ->orderBy('kilometres_speedometer_start', 'DESC')
-            ->limit(1)
-            ->first();
+        $result = $this->getPreviousTicket($id);
         if ($result != null) {
             $total = $result['closing_balance_fuel'];
         }
-        return $total ?? 0;
+        return (float)($total ?? 0);
+    }
+
+    /**
+     * Остаток масла на начало периода — из предыдущей путевки
+     */
+    public function getOpeningBalanceButter($id): float
+    {
+        $result = $this->getPreviousTicket($id);
+        if ($result != null) {
+            $total = $result['closing_balance_butter'];
+        }
+        return (float)($total ?? 0);
     }
 
     /**

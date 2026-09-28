@@ -1,9 +1,8 @@
+<?php
+    // Дата путевки — она же дата заправки по умолчанию в модалках
+    $ticketDate = $_SESSION['old']['data_ticket'] ?? date("{$data['year']}-{$data['month']}-d");
+?>
 <div class="container-fluid py-5 my-4">
-<!--        --><?php
-//            echo "<pre>";
-//            var_dump($data);
-//            echo "</pre>";
-//        ?>
     <div class="card">
         <div class="card-header">
             <h3>Создать новую запись в путевой лист</h3>
@@ -77,7 +76,7 @@
                                            class="form-control"
                                            id="data_ticket"
                                            name="data_ticket"
-                                           value="<?= date("{$data['year']}-{$data['month']}-d") ?>"
+                                           value="<?= $ticketDate ?>"
                                            placeholder="Дата"
                                            onchange="updateCalcNormals()">
                                     <label for="data_ticket">Дата</label>
@@ -138,6 +137,7 @@
                                 <div class="form-floating col-4">
                                     <input type="text"
                                            value="<?= $data['maxOpeningBalanceFuel'] ?>"
+                                           oninput="updateClosingBalances()"
                                            class="form-control"
                                            id="opening_balance_fuel"
                                            name="opening_balance_fuel"
@@ -240,6 +240,7 @@
                                     </div>
                                     <div class="form-floating col-3">
                                         <input type="text"
+                                               oninput="updateClosingBalances()"
                                                class="form-control"
                                                id="spent_fuel"
                                                name="spent_fuel"
@@ -537,7 +538,7 @@
                                            id="closing_balance_fuel"
                                            name="closing_balance_fuel"
                                            placeholder="Тонн">
-                                    <label for="closing_balance_fuel">Остаток на конец</label>
+                                    <label for="closing_balance_fuel">Остаток на конец периода горючего</label>
                                 </div>
                                 <div class="form-floating col-2">
                                     <input type="text"
@@ -665,6 +666,8 @@
                             <div class="row gx-2">
                                 <div class="form-floating col-3">
                                     <input type="text"
+                                           value="<?= $data['maxOpeningBalanceButter'] ?? '' ?>"
+                                           oninput="updateClosingBalances()"
                                            class="form-control"
                                            id="opening_balance_butter"
                                            name="opening_balance_butter"
@@ -691,6 +694,7 @@
                                 </div>
                                 <div class="form-floating col-3">
                                     <input type="text"
+                                           oninput="updateClosingBalances()"
                                            class="form-control"
                                            id="taken_butter"
                                            name="taken_butter"
@@ -851,6 +855,7 @@
                 <div class="row g-2 mt-2">
                             <div class="form-floating col-3">
                                 <input type="text"
+                                       oninput="updateClosingBalances()"
                                        class="form-control"
                                        id="spent_butter"
                                        name="spent_butter"
@@ -929,6 +934,9 @@
 
     document.addEventListener('DOMContentLoaded', function () {
         updateCalcNormals();
+
+        // Остатки на конец периода (горючего и масла)
+        updateClosingBalances();
 
         // Загружаем существующие заправки
         loadFuelRecords();

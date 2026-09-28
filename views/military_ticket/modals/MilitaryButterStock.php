@@ -14,7 +14,7 @@
                     <input type="date"
                            class="form-control"
                            id="butter_date"
-                           value="<?= date('Y-m-d') ?>"
+                           value="<?= $ticketDate ?? date('Y-m-d') ?>"
                            required>
                 </div>
                 <div class="mb-3">

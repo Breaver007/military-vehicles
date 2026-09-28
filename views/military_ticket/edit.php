@@ -1,3 +1,7 @@
+<?php
+    // Дата путевки — она же дата заправки по умолчанию в модалках
+    $ticketDate = $_SESSION['old']['data_ticket'] ?? $ticket['data_ticket'] ?? date('Y-m-d');
+?>
 <div class="container-fluid py-5 my-4">
     <div class="card">
         <div class="card-header">
@@ -507,10 +511,12 @@
                             <div class="row gx-2 mt-2">
                                 <div class="form-floating col-2">
                                     <input type="text"
+                                           oninput="updateClosingBalances()"
                                            class="form-control"
                                            id="spent_fuel"
                                            name="spent_fuel"
-                                           placeholder="Тонн">
+                                           placeholder="Тонн"
+                                           value="<?= $_SESSION['old']['spent_fuel'] ?? $ticket['spent_fuel'] ?? '' ?>">
                                     <label for="spent_fuel">Израсходовано горючего</label>
                                 </div>
                                 <div class="form-floating col-2">
@@ -518,7 +524,8 @@
                                            class="form-control"
                                            id="normal_fuel"
                                            name="normal_fuel"
-                                           placeholder="Тонн">
+                                           placeholder="Тонн"
+                                           value="<?= $_SESSION['old']['normal_fuel'] ?? $ticket['normal_fuel'] ?? '' ?>">
                                     <label for="normal_fuel">Положено по норме</label>
                                 </div>
                                 <div class="form-floating col-2">
@@ -526,15 +533,17 @@
                                            class="form-control"
                                            id="closing_balance_fuel"
                                            name="closing_balance_fuel"
-                                           placeholder="Тонн">
-                                    <label for="closing_balance_fuel">Остаток на конец</label>
+                                           placeholder="Тонн"
+                                           value="<?= $_SESSION['old']['closing_balance_fuel'] ?? $ticket['closing_balance_fuel'] ?? '' ?>">
+                                    <label for="closing_balance_fuel">Остаток на конец периода горючего</label>
                                 </div>
                                 <div class="form-floating col-2">
                                     <input type="text"
                                            class="form-control"
                                            id="saving_fuel"
                                            name="saving_fuel"
-                                           placeholder="Тонн">
+                                           placeholder="Тонн"
+                                           value="<?= $_SESSION['old']['saving_fuel'] ?? $ticket['saving_fuel'] ?? '' ?>">
                                     <label for="saving_fuel">Экономия</label>
                                 </div>
                                 <div class="form-floating col-2">
@@ -542,7 +551,8 @@
                                            class="form-control"
                                            id="excessive_fuel"
                                            name="excessive_fuel"
-                                           placeholder="Тонн">
+                                           placeholder="Тонн"
+                                           value="<?= $_SESSION['old']['excessive_fuel'] ?? $ticket['excessive_fuel'] ?? '' ?>">
                                     <label for="excessive_fuel">Перерасход</label>
                                 </div>
                             </div>
@@ -665,6 +675,7 @@
                             <div class="row gx-2">
                                 <div class="form-floating col-3">
                                     <input type="text"
+                                           oninput="updateClosingBalances()"
                                            class="form-control"
                                            id="opening_balance_fuel"
                                            name="opening_balance_fuel"
@@ -676,6 +687,7 @@
                                 </div>
                                 <div class="form-floating col-3">
                                     <input type="text"
+                                           oninput="updateClosingBalances()"
                                            class="form-control"
                                            id="opening_balance_butter"
                                            name="opening_balance_butter"
@@ -703,6 +715,7 @@
                                 </div>
                                 <div class="form-floating col-3">
                                     <input type="text"
+                                           oninput="updateClosingBalances()"
                                            class="form-control"
                                            id="taken_butter"
                                            name="taken_butter"
@@ -857,6 +870,7 @@
                         <div class="row gx-2">
                             <div class="form-floating col-3">
                                 <input type="text"
+                                       oninput="updateClosingBalances()"
                                        class="form-control"
                                        id="spent_butter"
                                        name="spent_butter"
@@ -959,6 +973,9 @@
         updateCalcNormals();
         updateCargoNo();
         updateCompletedWork();
+
+        // Остатки на конец периода (горючего и масла)
+        updateClosingBalances();
 
         loadFuelRecords();
         loadFuelOtherRecords();
