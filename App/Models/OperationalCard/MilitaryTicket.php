@@ -37,26 +37,33 @@ class MilitaryTicket extends Model
     /**
      * Получить предыдущую путевку техники — последнюю по дате путевки.
      *
-     * Используется как источник для остатков на начало периода и
-     * показаний спидометра на начало дня.
+     * Если передана дата ($beforeDate), учитываются только путевки,
+     * дата которых раньше неё (например, начало периода: 21.MM.YYYY).
+     * Это источник остатков на начало периода и спидометра на начало дня.
      */
-    public function getPreviousTicket($id): ?array
+    public function getPreviousTicket($id, ?string $beforeDate = null): ?array
     {
-        $stmt = $this->db->prepare(
-            "SELECT * FROM {$this->table}
-             WHERE m_model_machine = :machine
-             ORDER BY data_ticket DESC, id DESC
-             LIMIT 1"
-        );
-        $stmt->execute(['machine' => $id]);
+        $sql = "SELECT * FROM {$this->table}
+                WHERE m_model_machine = :machine";
+        $params = ['machine' => $id];
+
+        if ($beforeDate !== null && $beforeDate !== '') {
+            $sql .= " AND data_ticket < :before";
+            $params['before'] = $beforeDate;
+        }
+
+        $sql .= " ORDER BY data_ticket DESC, id DESC LIMIT 1";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute($params);
         $result = $stmt->fetch();
 
         return $result ?: null;
     }
 
-    public function getMaxKilometres($id): int
+    public function getMaxKilometres($id, ?string $beforeDate = null): int
     {
-        $result = $this->getPreviousTicket($id);
+        $result = $this->getPreviousTicket($id, $beforeDate);
         if ($result != null) {
             $total = $result['kilometres_speedometer_start'] + $result['kilometres_speedometer'];
         }
@@ -66,9 +73,9 @@ class MilitaryTicket extends Model
     /**
      * Остаток горючего на начало периода — из предыдущей путевки
      */
-    public function getOpeningBalanceFuel($id): float
+    public function getOpeningBalanceFuel($id, ?string $beforeDate = null): float
     {
-        $result = $this->getPreviousTicket($id);
+        $result = $this->getPreviousTicket($id, $beforeDate);
         if ($result != null) {
             $total = $result['closing_balance_fuel'];
         }
@@ -78,9 +85,9 @@ class MilitaryTicket extends Model
     /**
      * Остаток масла на начало периода — из предыдущей путевки
      */
-    public function getOpeningBalanceButter($id): float
+    public function getOpeningBalanceButter($id, ?string $beforeDate = null): float
     {
-        $result = $this->getPreviousTicket($id);
+        $result = $this->getPreviousTicket($id, $beforeDate);
         if ($result != null) {
             $total = $result['closing_balance_butter'];
         }

@@ -76,10 +76,12 @@ class MilitaryTicketController extends Controller
     public function create(int $id, int $month, int $year): void
     {
         $formattedMonth = sprintf("%02d", $month);
-        $MaxKilometres = $this->ticketModel->getMaxKilometres($id);
+        // Начало периода: 21.MM.YYYY — все, что раньше, считается предыдущей путевкой
+        $periodStart = sprintf("%04d-%02d-21", $year, $month);
+        $MaxKilometres = $this->ticketModel->getMaxKilometres($id, $periodStart);
         // Остатки на начало периода берём из предыдущей путевки этой техники
-        $OpeningBalanceFuel = $this->ticketModel->getOpeningBalanceFuel($id);
-        $OpeningBalanceButter = $this->ticketModel->getOpeningBalanceButter($id);
+        $OpeningBalanceFuel = $this->ticketModel->getOpeningBalanceFuel($id, $periodStart);
+        $OpeningBalanceButter = $this->ticketModel->getOpeningBalanceButter($id, $periodStart);
         $machine = $this->machineModel->findWithRelations($id);
 
         // Генерируем временный ID для сессии
@@ -137,7 +139,7 @@ class MilitaryTicketController extends Controller
             'kilometres_linear' => $_POST['kilometres_linear'] ?: 0,
             'kilometres_city_minsk' => $_POST['kilometres_city_minsk'] ?: 0,
             'kilometres_ticket' => $_POST['kilometres_ticket'] ?: 0,
-            'ticket_write_off' => $_POST['ticket_write_off'] ?: 0,
+            'ticket_write_off' => $_POST['ticket_write_off'] ?? 0,
             'calc_normal_city' => $_POST['calc_normal_city'] ?: 0,
             'calc_normal_trail' => $_POST['calc_normal_trail'] ?: 0,
             'calc_normal_ground' => $_POST['calc_normal_ground'] ?: 0,

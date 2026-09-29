@@ -122,12 +122,18 @@
     }
     // Техника
     $machinesData = [];
+    $fuelOpeningTaken = []; // какой остаток на начало уже взяли для вида топлива
     foreach ($data['ModelMachineTicket'] as $ticket) {
         $machineTicketNumbers[$ticket['m_model_machine']][$ticket['id']] = $ticket['number_ticket'];
         $machineId = $ticket['m_model_machine'];
         $fuelId = $data['ModelMachine'][$machineId]['m_fuel'] ?? null;
 
         if ($fuelId && isset($fuels[$fuelId])) {
+            // Остаток на начало отчетного периода — из первой путевки за период
+            if (!isset($fuelOpeningTaken[$fuelId])) {
+                $fuelOpeningTaken[$fuelId] = true;
+                $fuels[$fuelId]['opening_balance'] = floatval($ticket['opening_balance_fuel'] ?? 0);
+            }
             // Топливо
             $fuels[$fuelId]['spent_fuel'] += floatval($ticket['spent_fuel'] ?? 0);
             $fuels[$fuelId]['taken_local'] += floatval($ticket['taken_load_f'] ?? 0);
