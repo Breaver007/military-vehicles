@@ -1357,6 +1357,12 @@ class MilitaryTicketController extends Controller
     {
         $totalRow = $rowIndex + 1;
 
+        // Остаток — состояние, а не накопление: на начало берём первую путёвку,
+        // на конец — последнюю. Остальные графы суммируются.
+        $tickets = $data['getModelMachineTicket'] ?? [];
+        $firstTicket = $tickets ? reset($tickets) : null;
+        $lastTicket = $tickets ? end($tickets) : null;
+
         $sheet->setCellValue('A' . $totalRow, 'ИТОГО:');
         $sheet->mergeCells('A' . $totalRow . ':B' . $totalRow);
 
@@ -1366,16 +1372,16 @@ class MilitaryTicketController extends Controller
         $sheet->setCellValue('F' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'pump')));
         $sheet->setCellValue('H' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'completed_work')));
         $sheet->setCellValue('I' . $totalRow, round(array_sum(array_column($data['getModelMachineTicket'], 'completed_work')) * array_sum(array_column($data['getModelMachineTicket'], 'cargo')), 0));
-        $sheet->setCellValue('J' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'opening_balance_fuel')));
-        $sheet->setCellValue('K' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'opening_balance_butter')));
+        $sheet->setCellValue('J' . $totalRow, (float)($firstTicket['opening_balance_fuel'] ?? 0));
+        $sheet->setCellValue('K' . $totalRow, (float)($firstTicket['opening_balance_butter'] ?? 0));
         $sheet->setCellValue('L' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'taken_fuel')));
         $sheet->setCellValue('M' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'taken_butter')));
         $sheet->setCellValue('N' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'spent_fuel')));
         $sheet->setCellValue('O' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'spent_butter')));
         $sheet->setCellValue('P' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'normal_fuel')));
         $sheet->setCellValue('Q' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'normal_butter')));
-        $sheet->setCellValue('R' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'closing_balance_fuel')));
-        $sheet->setCellValue('S' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'closing_balance_butter')));
+        $sheet->setCellValue('R' . $totalRow, (float)($lastTicket['closing_balance_fuel'] ?? 0));
+        $sheet->setCellValue('S' . $totalRow, (float)($lastTicket['closing_balance_butter'] ?? 0));
         $sheet->setCellValue('T' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'saving_fuel')));
         $sheet->setCellValue('U' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'saving_butter')));
         $sheet->setCellValue('V' . $totalRow, array_sum(array_column($data['getModelMachineTicket'], 'excessive_fuel')));

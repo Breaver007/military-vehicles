@@ -130,6 +130,9 @@ $months = [
 
     <!-- Модель машины и регистрационный знак -->
     <?php
+    $ticketsPeriod = $data['getModelMachineTicket'] ?? [];
+    $firstTicketPeriod = $ticketsPeriod ? reset($ticketsPeriod) : null;
+    $lastTicketPeriod = $ticketsPeriod ? end($ticketsPeriod) : null;
     $startKm = isset($data['getModelMachineTicket'][0]) ? $data['getModelMachineTicket'][0]['kilometres_speedometer_start'] : 0;
     $totalKm = array_sum(array_column($data['getModelMachineTicket'], 'kilometres_speedometer'));
     $endKm = $startKm + $totalKm;
@@ -265,16 +268,16 @@ $months = [
             <td></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'completed_work')) ?></td>
             <td><?= round(array_sum(array_column($data['getModelMachineTicket'], 'completed_work')) * array_sum(array_column($data['getModelMachineTicket'], 'cargo')), 0) ?></td>
-            <td><?= array_sum(array_column($data['getModelMachineTicket'], 'opening_balance_fuel')) ?></td>
-            <td><?= array_sum(array_column($data['getModelMachineTicket'], 'opening_balance_butter')) ?></td>
+            <td><?= (float)($firstTicketPeriod['opening_balance_fuel'] ?? 0) ?></td>
+            <td><?= (float)($firstTicketPeriod['opening_balance_butter'] ?? 0) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'taken_fuel')) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'taken_butter')) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'spent_fuel')) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'spent_butter')) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'normal_fuel')) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'normal_butter')) ?></td>
-            <td><?= array_sum(array_column($data['getModelMachineTicket'], 'closing_balance_fuel')) ?></td>
-            <td><?= array_sum(array_column($data['getModelMachineTicket'], 'closing_balance_butter')) ?></td>
+            <td><?= (float)($lastTicketPeriod['closing_balance_fuel'] ?? 0) ?></td>
+            <td><?= (float)($lastTicketPeriod['closing_balance_butter'] ?? 0) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'saving_fuel')) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'saving_butter')) ?></td>
             <td><?= array_sum(array_column($data['getModelMachineTicket'], 'excessive_fuel')) ?></td>
