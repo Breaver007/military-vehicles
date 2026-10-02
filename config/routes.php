@@ -29,6 +29,8 @@ $router->post('/military-report/print', [MilitaryReportController::class, 'print
 $router->get('/military-ticket', [MilitaryTicketController::class, 'index'])->name('military-ticket.index');
 $router->get('/military-ticket/create/{id}/{month}/{year}', [MilitaryTicketController::class, 'create'])->name('military-ticket.create');
 $router->post('/military-ticket/store', [MilitaryTicketController::class, 'store'])->name('military-ticket.store');
+// AJAX: остатки/спидометр из предыдущей путёвки. Регистрируем до /military-ticket/{id}...
+$router->get('/military-ticket/opening-data/{id}', [MilitaryTicketController::class, 'openingData']);
 $router->get('/military-ticket/{id}', [MilitaryTicketController::class, 'show'])->name('military-ticket.show');
 $router->get('/military-ticket/{id}/{month}/{year}', [MilitaryTicketController::class, 'showMonth'])->name('military-ticket.showMonth');
 $router->get('/military-ticket/edit/{idModelMachine}/{month}/{year}/{id}', [MilitaryTicketController::class, 'edit'])->name('military-ticket.edit');

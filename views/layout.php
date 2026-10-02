@@ -128,7 +128,7 @@
         </ul>
     </div>
 </footer>
-<script  src="/public/js/m_ticket/ticketCreate.js"></script>
+<script src="/public/js/m_ticket/ticketCreate.js?v=<?= (int)@filemtime(__DIR__ . '/../public/js/m_ticket/ticketCreate.js') ?>"></script>
 <script src="/public/js/bootstrap.bundle.js"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function () {

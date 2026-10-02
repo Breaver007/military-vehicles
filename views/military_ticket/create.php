@@ -1,6 +1,8 @@
 <?php
-    // Дата путевки — она же дата заправки по умолчанию в модалках
-    $ticketDate = $_SESSION['old']['data_ticket'] ?? date("{$data['year']}-{$data['month']}-d");
+    // Дата путевки — она же дата заправки по умолчанию в модалках.
+    // Контроллер кладёт сюда дату по умолчанию (сегодня), чтобы вид и
+    // подтяжка остатков считали от одного и того же значения.
+    $ticketDate = $data['ticketDate'] ?? $_SESSION['old']['data_ticket'] ?? date('Y-m-d');
 ?>
 <div class="container-fluid py-5 my-4">
     <div class="card">
@@ -19,7 +21,10 @@
                 <?php unset($_SESSION['errors']); ?>
             <?php endif; ?>
 
-            <form action="/military-ticket/store" method="POST" id="mainForm">
+            <form action="/military-ticket/store"
+                  method="POST"
+                  id="mainForm"
+                  data-opening-url="/military-ticket/opening-data/<?= (int)$data['idMachines'] ?>">
                 <div class="row">
                     <div class="col-12 d-none">
                         <div class="row gx-2">
@@ -78,7 +83,7 @@
                                            name="data_ticket"
                                            value="<?= $ticketDate ?>"
                                            placeholder="Дата"
-                                           onchange="updateCalcNormals()">
+                                           onchange="updateOpeningFromPrevious(); updateCalcNormals()">
                                     <label for="data_ticket">Дата</label>
                                 </div>
                                 <div class="form-floating col-6">

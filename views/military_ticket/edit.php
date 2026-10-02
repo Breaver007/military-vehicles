@@ -19,7 +19,10 @@
                 <?php unset($_SESSION['errors']); ?>
             <?php endif; ?>
 
-            <form action="/military-ticket/update/<?= $data['idMachines'] ?? $ticket['machine_id'] ?>/<?= $data['month'] ?? $ticket['month'] ?>/<?= $data['year'] ?? $ticket['year'] ?>/<?= $ticket['id'] ?>" method="POST">
+            <form action="/military-ticket/update/<?= $data['idMachines'] ?? $ticket['machine_id'] ?>/<?= $data['month'] ?? $ticket['month'] ?>/<?= $data['year'] ?? $ticket['year'] ?>/<?= $ticket['id'] ?>"
+                  method="POST"
+                  data-opening-url="/military-ticket/opening-data/<?= (int)($data['idMachines'] ?? $ticket['machine_id']) ?>"
+                  data-opening-exclude="<?= (int)$ticket['id'] ?>">
                 <input type="hidden" name="temp_id" value="<?= $temp_id ?? '' ?>">
                 <input type="hidden" id="machine_linear_norm" value="<?= $machine['linear_norm'] ?? 0 ?>">
                 <input type="hidden" id="machine_release_date" value="<?= $machine['release_date'] ?? '' ?>">
@@ -73,7 +76,7 @@
                                            name="data_ticket"
                                            value="<?= $_SESSION['old']['data_ticket'] ?? $ticket['data_ticket'] ?? '' ?>"
                                            placeholder="Дата"
-                                           onchange="updateCalcNormals()">
+                                           onchange="updateOpeningFromPrevious(); updateCalcNormals()">
                                     <label for="data_ticket">Дата</label>
                                 </div>
                                 <div class="form-floating col-6">

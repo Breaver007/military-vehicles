@@ -38,10 +38,14 @@ class MilitaryTicket extends Model
      * Получить предыдущую путевку техники — последнюю по дате путевки.
      *
      * Если передана дата ($beforeDate), учитываются только путевки,
-     * дата которых раньше неё (например, начало периода: 21.MM.YYYY).
-     * Это источник остатков на начало периода и спидометра на начало дня.
+     * дата которых строго раньше неё — то есть предыдущая путевка
+     * относительно даты создаваемой путевки.
+     * Это источник остатков на начало дня и спидометра на начало дня.
+     *
+     * $excludeId — не брать эту путёвку: нужно при редактировании,
+     * чтобы не подставить остаток самой себе.
      */
-    public function getPreviousTicket($id, ?string $beforeDate = null): ?array
+    public function getPreviousTicket($id, ?string $beforeDate = null, $excludeId = null): ?array
     {
         $sql = "SELECT * FROM {$this->table}
                 WHERE m_model_machine = :machine";
@@ -50,6 +54,11 @@ class MilitaryTicket extends Model
         if ($beforeDate !== null && $beforeDate !== '') {
             $sql .= " AND data_ticket < :before";
             $params['before'] = $beforeDate;
+        }
+
+        if ($excludeId !== null && $excludeId !== '') {
+            $sql .= " AND id <> :exclude";
+            $params['exclude'] = $excludeId;
         }
 
         $sql .= " ORDER BY data_ticket DESC, id DESC LIMIT 1";
@@ -61,37 +70,31 @@ class MilitaryTicket extends Model
         return $result ?: null;
     }
 
-    public function getMaxKilometres($id, ?string $beforeDate = null): int
-    {
-        $result = $this->getPreviousTicket($id, $beforeDate);
-        if ($result != null) {
-            $total = $result['kilometres_speedometer_start'] + $result['kilometres_speedometer'];
-        }
-        return (int)($total ?? 0);
-    }
-
     /**
-     * Остаток горючего на начало периода — из предыдущей путевки
+     * Остатки и спидометр из предыдущей путёвки — для предзаполнения формы.
+     *
+     * $beforeDate — дата новой путёвки: предыдущей считается последняя,
+     * у которой data_ticket строго раньше (остаток на конец дня предыдущей
+     * путёвки переходит в остаток на начало дня новой).
+     *
+     * $excludeId — не брать эту путёвку (нужно при редактировании,
+     * чтобы не подставить остаток самой себе).
+     *
+     * @return array{opening_balance_fuel: float, opening_balance_butter: float, max_kilometres: int}|null
      */
-    public function getOpeningBalanceFuel($id, ?string $beforeDate = null): float
+    public function getOpeningData($id, string $beforeDate, $excludeId = null): ?array
     {
-        $result = $this->getPreviousTicket($id, $beforeDate);
-        if ($result != null) {
-            $total = $result['closing_balance_fuel'];
-        }
-        return (float)($total ?? 0);
-    }
+        $row = $this->getPreviousTicket($id, $beforeDate, $excludeId);
 
-    /**
-     * Остаток масла на начало периода — из предыдущей путевки
-     */
-    public function getOpeningBalanceButter($id, ?string $beforeDate = null): float
-    {
-        $result = $this->getPreviousTicket($id, $beforeDate);
-        if ($result != null) {
-            $total = $result['closing_balance_butter'];
+        if (!$row) {
+            return null;
         }
-        return (float)($total ?? 0);
+
+        return [
+            'opening_balance_fuel' => (float)$row['closing_balance_fuel'],
+            'opening_balance_butter' => (float)$row['closing_balance_butter'],
+            'max_kilometres' => (int)((float)$row['kilometres_speedometer_start'] + (float)$row['kilometres_speedometer']),
+        ];
     }
 
     /**

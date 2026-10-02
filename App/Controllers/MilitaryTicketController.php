@@ -76,12 +76,17 @@ class MilitaryTicketController extends Controller
     public function create(int $id, int $month, int $year): void
     {
         $formattedMonth = sprintf("%02d", $month);
-        // Начало периода: 21.MM.YYYY — все, что раньше, считается предыдущей путевкой
-        $periodStart = sprintf("%04d-%02d-21", $year, $month);
-        $MaxKilometres = $this->ticketModel->getMaxKilometres($id, $periodStart);
-        // Остатки на начало периода берём из предыдущей путевки этой техники
-        $OpeningBalanceFuel = $this->ticketModel->getOpeningBalanceFuel($id, $periodStart);
-        $OpeningBalanceButter = $this->ticketModel->getOpeningBalanceButter($id, $periodStart);
+
+        // Дата новой путёвки по умолчанию — сегодня.
+        // Единый источник правды: её же получает вид для поля «Дата» и модалок.
+        $ticketDate = $_SESSION['old']['data_ticket'] ?? date('Y-m-d');
+
+        // Остаток на начало дня = остаток на конец предыдущей путёвки,
+        // то есть последней путёвки этой техники с датой строго раньше $ticketDate
+        $opening = $this->ticketModel->getOpeningData($id, $ticketDate);
+        $MaxKilometres = $opening['max_kilometres'] ?? 0;
+        $OpeningBalanceFuel = $opening['opening_balance_fuel'] ?? 0.0;
+        $OpeningBalanceButter = $opening['opening_balance_butter'] ?? 0.0;
         $machine = $this->machineModel->findWithRelations($id);
 
         // Генерируем временный ID для сессии
@@ -103,6 +108,7 @@ class MilitaryTicketController extends Controller
             'idMachines' => $id,
             'month' => $formattedMonth,
             'year' => $year,
+            'ticketDate' => $ticketDate,
             'maxKilometres' => $MaxKilometres,
             'maxOpeningBalanceFuel' => $OpeningBalanceFuel,
             'maxOpeningBalanceButter' => $OpeningBalanceButter,
@@ -111,6 +117,34 @@ class MilitaryTicketController extends Controller
             'MilitaryLocalStock' => $this->localStockModel->where('is_active', '=', 1),
             'MilitaryFuelOtherPlaces' => $this->fuelOtherPlacesModel->where('is_active', '=', 1),
             'MilitaryOtherStock' => $this->OtherStockModel->where('is_active', '=', 1),
+        ]);
+    }
+
+    /**
+     * AJAX: остатки на начало дня и спидометр для указанной даты путёвки.
+     *
+     * GET /military-ticket/opening-data/{id}?date=YYYY-MM-DD[&exclude=ID]
+     * exclude — id редактируемой путёвки, чтобы не подставить её же себе.
+     */
+    public function openingData(int $id): void
+    {
+        $date = $_GET['date'] ?? null;
+        if (!is_string($date) || !preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+            $date = date('Y-m-d');
+        }
+
+        $excludeId = $_GET['exclude'] ?? null;
+        if (!is_scalar($excludeId) || !ctype_digit((string)$excludeId)) {
+            $excludeId = null;
+        }
+
+        $opening = $this->ticketModel->getOpeningData($id, $date, $excludeId);
+
+        $this->json([
+            'date' => $date,
+            'opening_balance_fuel' => $opening['opening_balance_fuel'] ?? 0.0,
+            'opening_balance_butter' => $opening['opening_balance_butter'] ?? 0.0,
+            'max_kilometres' => $opening['max_kilometres'] ?? 0,
         ]);
     }
 

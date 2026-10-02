@@ -306,6 +306,95 @@ function updateClosingBalance(kind) {
 
     field.value = roundAmount(opening + taken - spent);
 }
+
+//////////////////////////////////////////////////////////////////////////
+// Остаток на начало дня и спидометр — из предыдущей путёвки
+
+/**
+ * Поля, которые подтягиваются автоматически, но можно поправить руками.
+ * Флаг data-manual ставится на первом ручном вводе: собственные
+ * присваивания события input не вызывают, поэтому он не сбрасывается.
+ */
+const AUTO_FROM_PREVIOUS = ['opening_balance_fuel', 'opening_balance_butter', 'kilometres_speedometer_start'];
+
+function initAutoFromPrevious() {
+    AUTO_FROM_PREVIOUS.forEach(function (id) {
+        const field = document.getElementById(id);
+        if (!field || field.dataset.autoTracked) return;
+
+        field.dataset.autoTracked = '1';
+        field.addEventListener('input', function () {
+            this.dataset.manual = '1';
+        });
+    });
+}
+
+/**
+ * Остаток на конец дня предыдущей путёвки → остаток на начало дня текущей.
+ *
+ * Источник — последняя путёвка этой техники с датой строго раньше выбранной.
+ * Спидометр на начало дня берётся оттуда же. Ручные значения (data-manual)
+ * не перетираются, после подтяжки остаток на конец пересчитывается.
+ */
+async function updateOpeningFromPrevious() {
+    const form = document.querySelector('form[data-opening-url]');
+    const dateInput = document.getElementById('data_ticket');
+    if (!form || !dateInput || !dateInput.value) return;
+
+    initAutoFromPrevious();
+
+    let url = form.dataset.openingUrl
+        + '?date=' + encodeURIComponent(dateInput.value);
+    if (form.dataset.openingExclude) {
+        url += '&exclude=' + encodeURIComponent(form.dataset.openingExclude);
+    }
+
+    let data;
+    try {
+        const response = await fetch(url);
+        if (!response.ok) return;
+        data = await response.json();
+    } catch (error) {
+        console.error('Не удалось получить остаток предыдущей путёвки:', error);
+        return;
+    }
+
+    ['fuel', 'butter'].forEach(function (kind) {
+        const field = document.getElementById('opening_balance_' + kind);
+        if (!field || field.dataset.manual === '1') return;
+
+        field.value = roundAmount(parseFloat(data['opening_balance_' + kind]) || 0);
+    });
+
+    const speedometer = document.getElementById('kilometres_speedometer_start');
+    if (speedometer) {
+        speedometer.min = data.max_kilometres || 0;
+
+        if (speedometer.dataset.manual !== '1') {
+            speedometer.value = data.max_kilometres || '';
+            // Пересчёт пробега вызываем напрямую, а не событием input:
+            // иначе свой же слушатель пометит поле как ручное (data-manual)
+            // и после первой смены даты останется старое значение
+            if (typeof updateTicketKilometresWork === 'function') {
+                updateTicketKilometresWork();
+            }
+        }
+    }
+
+    // Конец дня ещё не заполнен — не показываем отрицательный пробег
+    // (иначе «Всего» разойдётся с «км по путевке» и появится ложная подсказка)
+    const speedometerEnd = document.getElementById('kilometres_speedometer_end');
+    const speedometerWork = document.getElementById('kilometres_speedometer');
+    if (speedometerEnd && speedometerWork && !speedometerEnd.value) {
+        speedometerWork.value = '';
+        if (typeof checkKilometresMatch === 'function') checkKilometresMatch();
+    }
+
+    updateClosingBalances();
+}
+
+document.addEventListener('DOMContentLoaded', initAutoFromPrevious);
+
 const COEFFS = {
     city: 0.10,
     trail: -0.05,
