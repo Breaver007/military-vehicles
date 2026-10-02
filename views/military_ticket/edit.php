@@ -19,10 +19,7 @@
                 <?php unset($_SESSION['errors']); ?>
             <?php endif; ?>
 
-            <form action="/military-ticket/update/<?= $data['idMachines'] ?? $ticket['machine_id'] ?>/<?= $data['month'] ?? $ticket['month'] ?>/<?= $data['year'] ?? $ticket['year'] ?>/<?= $ticket['id'] ?>"
-                  method="POST"
-                  data-opening-url="/military-ticket/opening-data/<?= (int)($data['idMachines'] ?? $ticket['machine_id']) ?>"
-                  data-opening-exclude="<?= (int)$ticket['id'] ?>">
+            <form action="/military-ticket/update/<?= $data['idMachines'] ?? $ticket['machine_id'] ?>/<?= $data['month'] ?? $ticket['month'] ?>/<?= $data['year'] ?? $ticket['year'] ?>/<?= $ticket['id'] ?>" method="POST">
                 <input type="hidden" name="temp_id" value="<?= $temp_id ?? '' ?>">
                 <input type="hidden" id="machine_linear_norm" value="<?= $machine['linear_norm'] ?? 0 ?>">
                 <input type="hidden" id="machine_release_date" value="<?= $machine['release_date'] ?? '' ?>">
@@ -76,7 +73,7 @@
                                            name="data_ticket"
                                            value="<?= $_SESSION['old']['data_ticket'] ?? $ticket['data_ticket'] ?? '' ?>"
                                            placeholder="Дата"
-                                           onchange="updateOpeningFromPrevious(); updateCalcNormals()">
+                                           onchange="updateCalcNormals()">
                                     <label for="data_ticket">Дата</label>
                                 </div>
                                 <div class="form-floating col-6">
@@ -95,7 +92,7 @@
                         <fieldset>
                             <legend>Предварительные данные</legend>
                             <div class="row gx-2">
-                                <div class="form-floating col-4">
+                                <div class="form-floating col-3">
                                     <input type="number"
                                            required
                                            oninput="updateTicketKilometresWork()"
@@ -109,7 +106,7 @@
                                         Спидометр на начало дня
                                     </label>
                                 </div>
-                                <div class="form-floating col-4">
+                                <div class="form-floating col-3">
                                     <input type="number"
                                            required
                                            oninput="updateTicketKilometresWork()"
@@ -131,6 +128,18 @@
                                            placeholder="Кол-во дней"
                                            value="<?= $_SESSION['old']['day_count'] ?? $ticket['day_count'] ?? '' ?>">
                                     <label for="day_count">Кол-во дней</label>
+                                </div>
+                                <div class="form-floating col-4">
+                                    <input type="text"
+                                           oninput="updateClosingBalances()"
+                                           class="form-control"
+                                           id="opening_balance_fuel"
+                                           name="opening_balance_fuel"
+                                           placeholder="Тонн"
+                                           value="<?= $_SESSION['old']['opening_balance_fuel'] ?? $ticket['opening_balance_fuel'] ?? '' ?>">
+                                    <label for="opening_balance_fuel">
+                                        Остаток на начало периода горючего
+                                    </label>
                                 </div>
                                 <div class="col-3 d-flex align-items-center">
                                     <div class="form-check form-switch me-3">
@@ -676,18 +685,6 @@
                         <fieldset>
                             <legend>Материальные средства, л</legend>
                             <div class="row gx-2">
-                                <div class="form-floating col-3">
-                                    <input type="text"
-                                           oninput="updateClosingBalances()"
-                                           class="form-control"
-                                           id="opening_balance_fuel"
-                                           name="opening_balance_fuel"
-                                           placeholder="Тонн"
-                                           value="<?= $_SESSION['old']['opening_balance_fuel'] ?? $ticket['opening_balance_fuel'] ?? '' ?>">
-                                    <label for="opening_balance_fuel">
-                                        Остаток на начало периода горючего
-                                    </label>
-                                </div>
                                 <div class="form-floating col-3">
                                     <input type="text"
                                            oninput="updateClosingBalances()"
