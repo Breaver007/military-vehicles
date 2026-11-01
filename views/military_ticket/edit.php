@@ -392,6 +392,8 @@
                                     </div>
                                 </div>
                             </fieldset>
+                            <fieldset>
+                                <legend>Расход топлива</legend>
                             <div class="row gx-2 my-2 py-2 px-1">
                                 <div class="col-2">
                                     <div class="input-group">
@@ -520,6 +522,7 @@
                                     </div>
                                 </div>
                             </div>
+                            </fieldset>
                             <div class="row gx-2 mt-2">
                                 <div class="form-floating col-2">
                                     <input type="text"

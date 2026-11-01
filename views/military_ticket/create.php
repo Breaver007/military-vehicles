@@ -231,7 +231,7 @@
                                             город Минск
                                         </label>
                                     </div>
-                                    <div class="form-floating col-3">
+                                    <div class="form-floating col-1">
                                         <input type="number"
                                                min="0"
                                                class="form-control"
@@ -243,14 +243,17 @@
                                             км по путевке
                                         </label>
                                     </div>
-                                    <div class="form-floating col-3">
-                                        <input type="text"
-                                               oninput="updateClosingBalances()"
+                                    <div class="form-floating col-1">
+                                        <input type="number"
+                                               oninput="updateSpent()"
+                                               min="0"
                                                class="form-control"
-                                               id="spent_fuel"
-                                               name="spent_fuel"
-                                               placeholder="Тонн">
-                                        <label for="spent_fuel">Израсходовано горючего</label>
+                                               id="ticket_write_off"
+                                               name="ticket_write_off"
+                                               placeholder="К списанию">
+                                        <label for="ticket_write_off">
+                                            К списанию
+                                        </label>
                                     </div>
                                 </div>
                             </fieldset>
@@ -385,6 +388,8 @@
                                     </div>
                                 </div>
                             </fieldset>
+                            <fieldset>
+                                <legend>Расход топлива</legend>
                             <div class="row gx-2 my-2 py-2 px-1">
                                 <div class="col-2">
                                     <div class="input-group">
@@ -527,8 +532,18 @@
                                     </div>
                                 </div>
                             </div>
+                            </fieldset>
                             <div class="row gx-2 mt-2">
 
+                                <div class="form-floating col-2">
+                                    <input type="text"
+                                           oninput="updateClosingBalances()"
+                                           class="form-control"
+                                           id="spent_fuel"
+                                           name="spent_fuel"
+                                           placeholder="Тонн">
+                                    <label for="spent_fuel">Израсходовано горючего</label>
+                                </div>
                                 <div class="form-floating col-2">
                                     <input type="text"
                                            class="form-control"
